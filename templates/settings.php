@@ -8,28 +8,29 @@
   <form id="smshub-settings-form">
     <input type="hidden" id="smshub_active_provider" value="<?= esc_attr($active) ?>">
 
-    <div class="smshub-card" style="margin-bottom:20px;">
-      <h2 class="mt-0" style="font-size:16px;font-weight:700;margin-bottom:16px;">⚙️ General</h2>
+    <div class="smshub-card" style="margin-bottom:24px;">
+      <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:18px;">General</h2>
       <div class="smshub-cols">
         <div class="smshub-form-group">
-          <label>Admin Phone (receives trigger:admin alerts)</label>
+          <label>Admin Phone</label>
           <input id="smshub_admin_phone" name="admin_phone" class="smshub-input" type="text"
             value="<?= esc_attr($admin_phone) ?>" placeholder="+2348012345678">
+          <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">Receives trigger:admin alerts</div>
         </div>
         <div class="smshub-form-group">
           <label>REST API Key</label>
           <div class="flex">
             <input id="smshub_rest_api_key" name="rest_api_key" class="smshub-input smshub-mono" type="text"
               value="<?= esc_attr($api_key) ?>" placeholder="Generate a key for external API access">
-            <button type="button" id="smshub-gen-key" class="smshub-btn smshub-btn-ghost smshub-btn-sm" style="white-space:nowrap;">Generate</button>
+            <button type="button" id="smshub-gen-key" class="smshub-btn smshub-btn-ghost smshub-btn-sm">Generate</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="smshub-card" style="margin-bottom:20px;">
-      <h2 class="mt-0" style="font-size:16px;font-weight:700;margin-bottom:6px;">📡 SMS Providers</h2>
-      <p style="color:var(--hub-muted);font-size:13px;margin-bottom:18px;">Select your active provider and configure credentials. Click a card to activate it.</p>
+    <div class="smshub-card" style="margin-bottom:24px;">
+      <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:8px;">SMS Providers</h2>
+      <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:20px;">Select your active provider and configure credentials. Click a card to activate it.</p>
       <div class="provider-grid">
         <?php foreach ($providers as $key => $provider):
           $is_active = ($key === $active);
@@ -39,7 +40,7 @@
         <div class="provider-card <?= $is_active ? 'active' : '' ?>" data-key="<?= esc_attr($key) ?>">
           <?php if ($is_active): ?><div class="active-dot" title="Active"></div><?php endif; ?>
           <div class="pname"><?= esc_html($provider->get_label()) ?></div>
-          <div style="font-size:11px;color:var(--hub-muted);"><?= esc_html($key) ?></div>
+          <div style="font-size:11px;color:var(--hub-muted);font-weight:500;"><?= esc_html($key) ?></div>
 
           <div class="provider-fields <?= $is_active ? 'open' : '' ?>">
             <?php foreach ($fields as $f): ?>
@@ -66,12 +67,12 @@
               <?php endif; ?>
             </div>
             <?php endforeach; ?>
-            <div class="flex" style="gap:8px;margin-top:8px;">
+            <div class="flex" style="gap:10px;margin-top:12px;">
               <button type="button" class="smshub-btn smshub-btn-ghost smshub-btn-sm smshub-btn-test" data-provider="<?= esc_attr($key) ?>">
-                🧪 Test
+                Test
               </button>
               <button type="button" class="smshub-btn smshub-btn-ghost smshub-btn-sm smshub-btn-balance" data-provider="<?= esc_attr($key) ?>">
-                💰 Balance
+                Balance
               </button>
             </div>
           </div>
