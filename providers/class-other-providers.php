@@ -97,32 +97,48 @@ class AfricasTalking extends Provider_Base {
     }
 }
 
-// ─── BulkSMS ──────────────────────────────────────────────────────────────────
-class BulkSMS extends Provider_Base {
-    public function get_key(): string   { return 'bulksms'; }
-    public function get_label(): string { return 'BulkSMS'; }
+// ─── BulkSMS Nigeria ──────────────────────────────────────────────────────────
+class BulkSMSNigeria extends Provider_Base {
+    public function get_key(): string   { return 'bulksmsnigeria'; }
+    public function get_label(): string { return 'BulkSMS Nigeria'; }
 
     public function get_settings_fields(): array {
         return [
-            [ 'key' => 'token_id',     'label' => 'Token ID',     'type' => 'text',     'required' => true ],
-            [ 'key' => 'token_secret', 'label' => 'Token Secret', 'type' => 'password', 'required' => true ],
-            [ 'key' => 'sender_id',    'label' => 'Sender ID',    'type' => 'text',     'required' => false ],
+            [ 'key' => 'api_token', 'label' => 'API Token', 'type' => 'password', 'required' => true ],
+            [ 'key' => 'sender_id', 'label' => 'Sender ID', 'type' => 'text',     'required' => false, 'placeholder' => 'e.g. MyBrand' ],
         ];
     }
 
     public function send( string $to, string $message, array $args = [] ): array {
         $s = $this->settings();
-        $r = $this->http_post_json( 'https://api.bulksms.com/v1/messages', [
-            'to'   => $to,
-            'body' => $message,
-            'from' => $args['sender_id'] ?? $s['sender_id'] ?? null,
+        $r = $this->http_post_json( 'https://www.bulksmsnigeria.com/api/v2/sms', [
+            'to'      => $to,
+            'from'    => $args['sender_id'] ?? $s['sender_id'] ?? 'BulkSMS',
+            'body'    => $message,
         ], [
-            'Authorization' => 'Basic ' . base64_encode( ( $s['token_id'] ?? '' ) . ':' . ( $s['token_secret'] ?? '' ) ),
+            'Authorization' => 'Bearer ' . ( $s['api_token'] ?? '' ),
         ] );
 
-        $ok  = $r['ok'] && ! empty( $r['body'] ) && isset( $r['body'][0]['id'] );
-        $mid = $r['body'][0]['id'] ?? null;
-        return [ 'success' => $ok, 'message_id' => $mid, 'cost' => $r['body'][0]['creditCost'] ?? null, 'error' => $ok ? null : ( $r['error'] ?? 'Error' ) ];
+        $ok  = $r['ok'] && ( ( $r['body']['status'] ?? '' ) === 'success' || ! empty( $r['body']['data']['message_id'] ) );
+        $mid = $r['body']['data']['message_id'] ?? null;
+        return [
+            'success'    => $ok,
+            'message_id' => $mid,
+            'cost'       => $r['body']['data']['cost'] ?? null,
+            'error'      => $ok ? null : ( $r['body']['message'] ?? $r['body']['error'] ?? $r['error'] ?? 'Error' ),
+        ];
+    }
+
+    public function get_balance(): array {
+        $s = $this->settings();
+        $r = $this->http_get( 'https://www.bulksmsnigeria.com/api/v2/balance', [], [
+            'Authorization' => 'Bearer ' . ( $s['api_token'] ?? '' ),
+        ] );
+        return [
+            'supported' => true,
+            'balance'   => $r['body']['data']['balance'] ?? $r['body']['balance'] ?? null,
+            'currency'  => $r['body']['data']['currency'] ?? 'NGN',
+        ];
     }
 }
 
