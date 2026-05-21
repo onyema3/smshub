@@ -102,9 +102,11 @@
     loader(true);
     post('smshub_get_balance', { provider: key }, $btn).done(r => {
       loader(false);
-      if (r.success) {
+      if (r.success && r.data) {
         const b = r.data;
-        alert('Balance: ' + (b.balance ?? 'N/A') + (b.currency ? ' ' + b.currency : ''));
+        const bal = b.balance ?? b.data?.balance ?? 'N/A';
+        const cur = b.currency ?? b.data?.currency ?? '';
+        alert('Balance: ' + bal + (cur ? ' ' + cur : ''));
       } else {
         alert('Balance check not supported or failed.');
       }
