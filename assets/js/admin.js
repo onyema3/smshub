@@ -103,6 +103,10 @@
     const $alert = $('#smshub-settings-alert');
     const data = { active_provider: $('#smshub_active_provider').val(), admin_phone: $('#smshub_admin_phone').val(), failover_provider: $('#smshub_failover_provider').val(), max_retries: $('#smshub_max_retries').val() };
     data.provider_settings = {};
+    data.weekly_digest = $('#smshub_weekly_digest').is(':checked') ? 'yes' : 'no';
+    data.digest_email = $('#smshub_digest_email').val();
+    data.ip_whitelist = $('#smshub_ip_whitelist').val();
+    data.auto_purge_days = $('#smshub_auto_purge_days').val();
     $('.provider-card').each(function() {
       const key = $(this).data('key');
       data.provider_settings[key] = {};

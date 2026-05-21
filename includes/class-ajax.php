@@ -43,6 +43,9 @@ class Ajax {
             'smshub_get_audit_log',
             'smshub_export_personal_data',
             'smshub_erase_personal_data',
+            'smshub_get_live_feed',
+            'smshub_get_provider_health',
+            'smshub_get_reports',
         ];
         foreach ( $actions as $action ) {
             add_action( "wp_ajax_{$action}", [ $this, $action ] );
@@ -107,6 +110,11 @@ class Ajax {
         update_option( 'wpsmshub_ip_whitelist', $ip_whitelist );
         $auto_purge_days = (int) ( $_POST['auto_purge_days'] ?? 0 );
         update_option( 'wpsmshub_auto_purge_days', max( 0, $auto_purge_days ) );
+
+        $weekly_digest = sanitize_text_field( $_POST['weekly_digest'] ?? 'no' );
+        update_option( 'wpsmshub_weekly_digest_enabled', $weekly_digest === 'yes' ? 'yes' : 'no' );
+        $digest_email = sanitize_email( $_POST['digest_email'] ?? '' );
+        if ( $digest_email ) update_option( 'wpsmshub_digest_email', $digest_email );
 
         foreach ( $settings as $key => $fields ) {
             $clean = array_map( 'sanitize_text_field', (array) $fields );
@@ -512,5 +520,70 @@ class Ajax {
         }
         $erased = Privacy::erase_personal_data( $phone );
         wp_send_json_success( [ 'erased' => $erased ] );
+    }
+
+    // ── Reports & Real-time ─────────────────────────────────────────────
+    public function smshub_get_live_feed() {
+        $this->check();
+        global $wpdb;
+        $table = $wpdb->prefix . 'smshub_log';
+        $since = sanitize_text_field( $_POST['since'] ?? '' );
+        $where = $since ? $wpdb->prepare( "WHERE created_at > %s", $since ) : "WHERE 1=1";
+        $items = $wpdb->get_results(
+            "SELECT id, provider, recipient, LEFT(message, 50) as message_preview, status, trigger_src, created_at
+             FROM {$table} {$where} ORDER BY created_at DESC LIMIT 20",
+            ARRAY_A
+        );
+        wp_send_json_success( [ 'items' => $items, 'timestamp' => current_time( 'mysql' ) ] );
+    }
+
+    public function smshub_get_provider_health() {
+        $this->check();
+        global $wpdb;
+        $table = $wpdb->prefix . 'smshub_log';
+        // Last 1 hour stats per provider
+        $health = $wpdb->get_results(
+            "SELECT provider,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed,
+                    MAX(created_at) as last_activity
+             FROM {$table}
+             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+             GROUP BY provider",
+            ARRAY_A
+        );
+        // Calculate health status
+        foreach ( $health as &$h ) {
+            $fail_rate = $h['total'] > 0 ? ( $h['failed'] / $h['total'] ) * 100 : 0;
+            $h['fail_rate'] = round( $fail_rate, 1 );
+            $h['status'] = $fail_rate > 50 ? 'critical' : ( $fail_rate > 20 ? 'warning' : 'healthy' );
+        }
+        wp_send_json_success( $health );
+    }
+
+    public function smshub_get_reports() {
+        $this->check();
+        $type = sanitize_text_field( $_POST['report_type'] ?? '' );
+        $days = (int) ( $_POST['days'] ?? 30 );
+
+        switch ( $type ) {
+            case 'forecast':
+                wp_send_json_success( Reports::get_cost_forecast() );
+                break;
+            case 'providers':
+                wp_send_json_success( Reports::get_provider_performance( $days ) );
+                break;
+            case 'peak_hours':
+                wp_send_json_success( Reports::get_peak_hours( $days ) );
+                break;
+            case 'monthly':
+                wp_send_json_success( Reports::get_monthly_trends( 6 ) );
+                break;
+            case 'weekly_summary':
+                wp_send_json_success( Reports::get_weekly_summary() );
+                break;
+            default:
+                wp_send_json_error( 'Invalid report type.' );
+        }
     }
 }
