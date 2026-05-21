@@ -22,6 +22,13 @@ class Webhooks {
             'permission_callback' => '__return_true', // Public endpoint - providers need to reach it
         ] );
 
+        // Inbound SMS endpoint: /wp-json/wp-sms-hub/v1/inbound/{provider}
+        register_rest_route( $ns, '/inbound/(?P<provider>[a-zA-Z0-9_-]+)', [
+            'methods'             => [ 'POST', 'GET' ],
+            'callback'            => [ $this, 'handle_inbound' ],
+            'permission_callback' => '__return_true',
+        ] );
+
         // Delivery status endpoint for admin
         register_rest_route( $ns, '/delivery-stats', [
             'methods'             => 'GET',
@@ -271,5 +278,77 @@ class Webhooks {
             'failed'        => $failed,
             'delivery_rate' => $total > 0 ? round( ( $delivered + $sent ) / $total * 100, 1 ) : 0,
         ];
+    }
+
+    /**
+     * Handle inbound SMS (two-way).
+     * Providers POST inbound messages to /wp-json/wp-sms-hub/v1/inbound/{provider}
+     */
+    public function handle_inbound( \WP_REST_Request $request ): \WP_REST_Response {
+        $provider_key = $request->get_param( 'provider' );
+        $body         = $request->get_json_params() ?: $request->get_body_params();
+
+        $from    = $body['from'] ?? $body['msisdn'] ?? $body['sender'] ?? $body['From'] ?? '';
+        $message = $body['message'] ?? $body['text'] ?? $body['body'] ?? $body['Body'] ?? '';
+        $to      = $body['to'] ?? $body['recipient'] ?? $body['To'] ?? '';
+
+        if ( ! $from || ! $message ) {
+            return new \WP_REST_Response( [ 'status' => 'missing_data' ], 200 );
+        }
+
+        // Log inbound message
+        Log::add( [
+            'provider'    => $provider_key,
+            'direction'   => 'inbound',
+            'recipient'   => $to,
+            'sender_id'   => $from,
+            'message'     => $message,
+            'status'      => 'received',
+            'trigger_src' => 'inbound',
+        ] );
+
+        // Check auto-reply rules
+        $this->process_auto_reply( $from, $message, $provider_key );
+
+        do_action( 'wp_sms_hub_inbound_received', $from, $message, $provider_key, $body );
+
+        return new \WP_REST_Response( [ 'status' => 'ok' ], 200 );
+    }
+
+    /**
+     * Process auto-reply rules for inbound messages.
+     */
+    private function process_auto_reply( string $from, string $message, string $provider ) {
+        $rules = get_option( 'wpsmshub_auto_reply_rules', [] );
+        if ( empty( $rules ) || ! is_array( $rules ) ) return;
+
+        $message_lower = strtolower( trim( $message ) );
+
+        foreach ( $rules as $rule ) {
+            $keyword = strtolower( trim( $rule['keyword'] ?? '' ) );
+            if ( ! $keyword ) continue;
+
+            $match = false;
+            if ( $rule['match'] === 'exact' ) {
+                $match = ( $message_lower === $keyword );
+            } elseif ( $rule['match'] === 'contains' ) {
+                $match = ( str_contains( $message_lower, $keyword ) );
+            } elseif ( $rule['match'] === 'starts' ) {
+                $match = str_starts_with( $message_lower, $keyword );
+            }
+
+            if ( $match && ! empty( $rule['reply'] ) ) {
+                SMS_Manager::send( $from, $rule['reply'], [
+                    'provider'    => $provider ?: null,
+                    'trigger_src' => 'auto_reply:' . $keyword,
+                ] );
+
+                // Handle STOP keyword - remove from contacts
+                if ( $keyword === 'stop' || $keyword === 'unsubscribe' ) {
+                    Contacts::delete_by_phone( $from );
+                }
+                break; // Only first matching rule fires
+            }
+        }
     }
 }

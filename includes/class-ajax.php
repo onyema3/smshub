@@ -85,6 +85,9 @@ class Ajax {
         update_option( 'wpsmshub_failover_provider', $failover );
         update_option( 'wpsmshub_max_retries', max( 0, min( $retries, 5 ) ) );
 
+        $sender_ids = sanitize_textarea_field( $_POST['sender_ids'] ?? '' );
+        update_option( 'wpsmshub_sender_ids', $sender_ids );
+
         foreach ( $settings as $key => $fields ) {
             $clean = array_map( 'sanitize_text_field', (array) $fields );
             update_option( 'wpsmshub_provider_' . sanitize_key( $key ), $clean );

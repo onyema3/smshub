@@ -51,5 +51,9 @@ function wp_sms_hub() {
 
 add_action( 'plugins_loaded', 'wp_sms_hub' );
 
+add_action( 'init', function() {
+    load_plugin_textdomain( 'wp-sms-hub', false, dirname( plugin_basename( WPSMSHUB_PLUGIN_FILE ) ) . '/languages' );
+} );
+
 register_activation_hook( __FILE__,   [ 'WPSMSHub\Installer', 'activate'   ] );
 register_deactivation_hook( __FILE__, [ 'WPSMSHub\Installer', 'deactivate' ] );
