@@ -38,6 +38,8 @@ class Plugin {
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-reports.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-plugin-integrations.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-outbound-webhooks.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-db-optimizer.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-rest-api-v2.php';
 
         // Load all providers
         foreach ( glob( WPSMSHUB_PLUGIN_DIR . 'providers/class-*.php' ) as $file ) {
@@ -66,6 +68,8 @@ class Plugin {
         new Reports();
         new Plugin_Integrations();
         new Outbound_Webhooks();
+        new DB_Optimizer();
+        new REST_API_V2();
 
         do_action( 'wp_sms_hub_loaded' );
     }

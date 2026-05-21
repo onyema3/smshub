@@ -48,6 +48,8 @@ class Ajax {
             'smshub_get_reports',
             'smshub_save_outbound_webhook',
             'smshub_delete_outbound_webhook',
+            'smshub_run_db_maintenance',
+            'smshub_get_db_stats',
         ];
         foreach ( $actions as $action ) {
             add_action( "wp_ajax_{$action}", [ $this, $action ] );
@@ -603,5 +605,17 @@ class Ajax {
         $this->check();
         $index = (int) ( $_POST['index'] ?? -1 );
         Outbound_Webhooks::remove_webhook( $index ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
+    }
+
+    // ── DB Maintenance ──────────────────────────────────────────────────
+    public function smshub_run_db_maintenance() {
+        $this->check();
+        $result = DB_Optimizer::run_now();
+        wp_send_json_success( $result );
+    }
+
+    public function smshub_get_db_stats() {
+        $this->check();
+        wp_send_json_success( DB_Optimizer::get_db_stats() );
     }
 }
