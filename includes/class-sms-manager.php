@@ -19,7 +19,7 @@ class SMS_Manager {
             'InfoBip'        => Providers\InfoBip::class,
             'Vonage'         => Providers\Vonage::class,
             'AfricasTalking' => Providers\AfricasTalking::class,
-            'BulkSMS'        => Providers\BulkSMS::class,
+            'BulkSMSNigeria' => Providers\BulkSMSNigeria::class,
             'Multitexter'    => Providers\Multitexter::class,
             'SmartSMSSolutions' => Providers\SmartSMSSolutions::class,
         ];
