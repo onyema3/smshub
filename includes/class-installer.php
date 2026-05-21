@@ -164,6 +164,32 @@ class Installer {
             KEY idx_workflow (workflow_id)
         ) $charset;";
 
+        $sql_audit = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_audit (
+            id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id    BIGINT UNSIGNED DEFAULT NULL,
+            action     VARCHAR(100)    NOT NULL,
+            details    TEXT            DEFAULT NULL,
+            ip_address VARCHAR(45)     DEFAULT NULL,
+            created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_action (action),
+            KEY idx_user (user_id),
+            KEY idx_created (created_at)
+        ) $charset;";
+
+        $sql_consent = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_consent (
+            id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            phone        VARCHAR(20)     NOT NULL,
+            consent_type VARCHAR(50)     NOT NULL DEFAULT 'sms_optin',
+            source       VARCHAR(100)    DEFAULT 'manual',
+            ip_address   VARCHAR(45)     DEFAULT NULL,
+            consented_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            revoked_at   DATETIME        DEFAULT NULL,
+            PRIMARY KEY (id),
+            KEY idx_phone (phone),
+            KEY idx_type_active (consent_type, revoked_at)
+        ) $charset;";
+
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql1 );
         dbDelta( $sql2 );
@@ -175,6 +201,8 @@ class Installer {
         dbDelta( $sql8 );
         dbDelta( $sql_workflows );
         dbDelta( $sql_executions );
+        dbDelta( $sql_audit );
+        dbDelta( $sql_consent );
 
         add_option( 'wpsmshub_version', WPSMSHUB_VERSION );
         add_option( 'wpsmshub_active_provider', '' );

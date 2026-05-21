@@ -78,6 +78,22 @@
     </div>
 
     <div class="smshub-card" style="margin-bottom:24px;">
+      <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:18px;">Security & Privacy</h2>
+      <div class="smshub-cols">
+        <div class="smshub-form-group">
+          <label>API IP Whitelist</label>
+          <textarea id="smshub_ip_whitelist" name="ip_whitelist" class="smshub-textarea" style="min-height:80px;" placeholder="Leave empty to allow all IPs&#10;One IP per line, supports CIDR (e.g. 192.168.1.0/24)"><?= esc_textarea( get_option('wpsmshub_ip_whitelist', '') ) ?></textarea>
+          <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">Restrict REST API access to these IPs only. Empty = no restriction.</div>
+        </div>
+        <div class="smshub-form-group">
+          <label>Auto-Purge Inactive Contacts (Days)</label>
+          <input id="smshub_auto_purge_days" name="auto_purge_days" class="smshub-input" type="number" min="0" value="<?= esc_attr( get_option('wpsmshub_auto_purge_days', 0) ) ?>" placeholder="0 = disabled">
+          <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">Automatically delete contacts with no SMS activity for this many days. 0 = disabled.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="smshub-card" style="margin-bottom:24px;">
       <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:8px;">SMS Providers</h2>
       <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:20px;">Select your active provider and configure credentials. Click a card to activate it.</p>
       <div class="provider-grid">

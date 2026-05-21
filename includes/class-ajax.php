@@ -40,6 +40,9 @@ class Ajax {
             'smshub_save_workflow',
             'smshub_delete_workflow',
             'smshub_toggle_workflow',
+            'smshub_get_audit_log',
+            'smshub_export_personal_data',
+            'smshub_erase_personal_data',
         ];
         foreach ( $actions as $action ) {
             add_action( "wp_ajax_{$action}", [ $this, $action ] );
@@ -99,6 +102,11 @@ class Ajax {
 
         $sender_ids = sanitize_textarea_field( $_POST['sender_ids'] ?? '' );
         update_option( 'wpsmshub_sender_ids', $sender_ids );
+
+        $ip_whitelist = sanitize_textarea_field( $_POST['ip_whitelist'] ?? '' );
+        update_option( 'wpsmshub_ip_whitelist', $ip_whitelist );
+        $auto_purge_days = (int) ( $_POST['auto_purge_days'] ?? 0 );
+        update_option( 'wpsmshub_auto_purge_days', max( 0, $auto_purge_days ) );
 
         foreach ( $settings as $key => $fields ) {
             $clean = array_map( 'sanitize_text_field', (array) $fields );
@@ -474,5 +482,35 @@ class Ajax {
         $active = (int) ( $_POST['active'] ?? 0 );
         $wpdb->update( $wpdb->prefix . 'smshub_workflows', [ 'active' => $active ], [ 'id' => $id ] );
         wp_send_json_success();
+    }
+
+    // ── Audit & Privacy ─────────────────────────────────────────────────
+    public function smshub_get_audit_log() {
+        $this->check();
+        $data = Audit::get_log( [
+            'per_page' => (int) ( $_POST['per_page'] ?? 50 ),
+            'offset'   => (int) ( $_POST['offset'] ?? 0 ),
+            'action'   => sanitize_text_field( $_POST['action_filter'] ?? '' ),
+        ] );
+        wp_send_json_success( $data );
+    }
+
+    public function smshub_export_personal_data() {
+        $this->check();
+        $phone = sanitize_text_field( $_POST['phone'] ?? '' );
+        if ( ! $phone ) wp_send_json_error( 'Phone number required.' );
+        $data = Privacy::export_personal_data( $phone );
+        wp_send_json_success( $data );
+    }
+
+    public function smshub_erase_personal_data() {
+        $this->check();
+        $phone = sanitize_text_field( $_POST['phone'] ?? '' );
+        if ( ! $phone ) wp_send_json_error( 'Phone number required.' );
+        if ( ! isset( $_POST['confirm'] ) || $_POST['confirm'] !== 'yes' ) {
+            wp_send_json_error( 'Confirmation required.' );
+        }
+        $erased = Privacy::erase_personal_data( $phone );
+        wp_send_json_success( [ 'erased' => $erased ] );
     }
 }
