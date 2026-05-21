@@ -35,6 +35,7 @@ class Plugin {
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-audit.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-privacy.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-security.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-reports.php';
 
         // Load all providers
         foreach ( glob( WPSMSHUB_PLUGIN_DIR . 'providers/class-*.php' ) as $file ) {
@@ -60,6 +61,7 @@ class Plugin {
         new Audit();
         new Privacy();
         new Security();
+        new Reports();
 
         do_action( 'wp_sms_hub_loaded' );
     }

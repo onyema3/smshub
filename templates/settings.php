@@ -67,6 +67,25 @@
     </div>
 
     <div class="smshub-card" style="margin-bottom:24px;">
+      <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:18px;">Reporting</h2>
+      <div class="smshub-cols">
+        <div class="smshub-form-group">
+          <label>Weekly Email Digest</label>
+          <label class="smshub-toggle">
+            <input type="checkbox" id="smshub_weekly_digest" name="weekly_digest" value="yes" <?= checked( get_option('wpsmshub_weekly_digest_enabled', 'yes'), 'yes', false ) ?>>
+            <span class="smshub-toggle-slider"></span>
+          </label>
+          <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">Send weekly performance summary every Monday at 9am</div>
+        </div>
+        <div class="smshub-form-group">
+          <label>Digest Email Address</label>
+          <input id="smshub_digest_email" name="digest_email" class="smshub-input" type="email"
+            value="<?= esc_attr( get_option('wpsmshub_digest_email', get_option('admin_email')) ) ?>" placeholder="admin@example.com">
+        </div>
+      </div>
+    </div>
+
+    <div class="smshub-card" style="margin-bottom:24px;">
       <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:18px;">Sender IDs</h2>
       <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:16px;">Register your approved sender IDs here. Most Nigerian providers require DND-approved sender names.</p>
       <?php $sender_ids = get_option('wpsmshub_sender_ids', ''); ?>
