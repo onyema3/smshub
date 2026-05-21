@@ -30,6 +30,8 @@ class Plugin {
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-sub-accounts.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-campaigns.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-link-tracker.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-ai-messages.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-workflows.php';
 
         // Load all providers
         foreach ( glob( WPSMSHUB_PLUGIN_DIR . 'providers/class-*.php' ) as $file ) {
@@ -51,6 +53,7 @@ class Plugin {
         new WooCommerce_Integration();
         new Campaigns();
         new Link_Tracker();
+        new Workflows();
 
         do_action( 'wp_sms_hub_loaded' );
     }

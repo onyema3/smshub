@@ -36,6 +36,10 @@ class Ajax {
             'smshub_pause_campaign',
             'smshub_delete_campaign',
             'smshub_get_campaign_stats',
+            'smshub_ai_suggest',
+            'smshub_save_workflow',
+            'smshub_delete_workflow',
+            'smshub_toggle_workflow',
         ];
         foreach ( $actions as $action ) {
             add_action( "wp_ajax_{$action}", [ $this, $action ] );
@@ -425,5 +429,50 @@ class Ajax {
         $id    = (int) ( $_POST['id'] ?? 0 );
         $stats = Campaigns::get_stats( $id );
         wp_send_json_success( $stats );
+    }
+
+    // ── AI Message Suggestions ──────────────────────────────────────────
+    public function smshub_ai_suggest() {
+        $this->check();
+        $context = sanitize_text_field( $_POST['context'] ?? '' );
+        $tone    = sanitize_text_field( $_POST['tone'] ?? 'professional' );
+        if ( ! $context ) wp_send_json_error( 'Context required.' );
+        $suggestions = AI_Messages::suggest( $context, $tone );
+        $tags = AI_Messages::suggest_tags( $context );
+        wp_send_json_success( [ 'suggestions' => $suggestions, 'tags' => $tags ] );
+    }
+
+    // ── Workflows ───────────────────────────────────────────────────────
+    public function smshub_save_workflow() {
+        $this->check();
+        $id = (int) ( $_POST['workflow_id'] ?? 0 );
+        $data = [
+            'name'          => sanitize_text_field( $_POST['name'] ?? '' ),
+            'trigger_event' => sanitize_text_field( $_POST['trigger_event'] ?? '' ),
+            'steps'         => json_decode( stripslashes( $_POST['steps'] ?? '[]' ), true ),
+            'active'        => (int) ( $_POST['active'] ?? 1 ),
+        ];
+        if ( ! $data['name'] || ! $data['trigger_event'] ) wp_send_json_error( 'Name and trigger required.' );
+        if ( $id ) {
+            $ok = Workflows::update( $id, $data );
+        } else {
+            $ok = Workflows::create( $data );
+        }
+        $ok ? wp_send_json_success() : wp_send_json_error( 'Failed to save workflow.' );
+    }
+
+    public function smshub_delete_workflow() {
+        $this->check();
+        $id = (int) ( $_POST['id'] ?? 0 );
+        Workflows::delete( $id ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
+    }
+
+    public function smshub_toggle_workflow() {
+        $this->check();
+        global $wpdb;
+        $id     = (int) ( $_POST['id'] ?? 0 );
+        $active = (int) ( $_POST['active'] ?? 0 );
+        $wpdb->update( $wpdb->prefix . 'smshub_workflows', [ 'active' => $active ], [ 'id' => $id ] );
+        wp_send_json_success();
     }
 }
