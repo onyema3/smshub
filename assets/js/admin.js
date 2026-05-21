@@ -539,6 +539,23 @@
     post('smshub_delete_campaign', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
   });
 
+  // ── Outbound Webhooks ───────────────────────────────────────────────
+  $(document).on('click', '#smshub-add-webhook', function() {
+    const url = $('#smshub_webhook_url').val();
+    const name = $('#smshub_webhook_name').val() || 'Webhook';
+    if (!url) return toast('URL required', 'error');
+    post('smshub_save_outbound_webhook', { webhook_url: url, webhook_name: name, webhook_events: ['all'] }, $(this)).done(r => {
+      if (r.success) { toast('Webhook added', 'success'); location.reload(); }
+      else toast(r.data || 'Failed', 'error');
+    });
+  });
+  $(document).on('click', '.webhook-delete', function() {
+    const $el = $(this);
+    post('smshub_delete_outbound_webhook', { index: $el.data('index') }).done(r => {
+      if (r.success) removeRow($el);
+    });
+  });
+
   // ── Dark/Light mode toggle ──────────────────────────────────────────
   $(function() {
     const $wrap = $('.smshub-wrap');

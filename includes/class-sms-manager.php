@@ -26,6 +26,7 @@ class SMS_Manager {
             'BulkSMSNigeria' => Providers\BulkSMSNigeria::class,
             'Multitexter'    => Providers\Multitexter::class,
             'SmartSMSSolutions' => Providers\SmartSMSSolutions::class,
+            'WhatsApp'   => Providers\WhatsApp::class,
         ];
         foreach ( $classes as $key => $class ) {
             self::register_provider( $key, new $class() );
