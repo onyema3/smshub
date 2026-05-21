@@ -1,0 +1,73 @@
+<?php
+namespace WPSMSHub;
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+class Installer {
+    public static function activate() {
+        global $wpdb;
+        $charset = $wpdb->get_charset_collate();
+
+        // SMS Log table
+        $sql1 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_log (
+            id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            provider    VARCHAR(50)     NOT NULL,
+            direction   ENUM('outbound','inbound') NOT NULL DEFAULT 'outbound',
+            recipient   VARCHAR(20)     NOT NULL,
+            sender_id   VARCHAR(20)     DEFAULT NULL,
+            message     TEXT            NOT NULL,
+            status      VARCHAR(20)     NOT NULL DEFAULT 'pending',
+            provider_id VARCHAR(100)    DEFAULT NULL,
+            cost        DECIMAL(10,4)   DEFAULT NULL,
+            trigger_src VARCHAR(100)    DEFAULT NULL,
+            error_msg   TEXT            DEFAULT NULL,
+            created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_status (status),
+            KEY idx_created (created_at),
+            KEY idx_recipient (recipient(15))
+        ) $charset;";
+
+        // Contacts table
+        $sql2 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_contacts (
+            id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name       VARCHAR(100)    NOT NULL,
+            phone      VARCHAR(20)     NOT NULL,
+            group_name VARCHAR(100)    DEFAULT 'Default',
+            meta       LONGTEXT        DEFAULT NULL,
+            created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_phone (phone),
+            KEY idx_group (group_name)
+        ) $charset;";
+
+        // Trigger rules table
+        $sql3 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_triggers (
+            id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name        VARCHAR(200)    NOT NULL,
+            event       VARCHAR(100)    NOT NULL,
+            provider    VARCHAR(50)     DEFAULT NULL,
+            recipients  TEXT            NOT NULL,
+            sender_id   VARCHAR(20)     DEFAULT NULL,
+            message_tpl TEXT            NOT NULL,
+            active      TINYINT(1)      NOT NULL DEFAULT 1,
+            created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_event (event),
+            KEY idx_active (active)
+        ) $charset;";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta( $sql1 );
+        dbDelta( $sql2 );
+        dbDelta( $sql3 );
+
+        add_option( 'wpsmshub_version', WPSMSHUB_VERSION );
+        add_option( 'wpsmshub_active_provider', '' );
+        add_option( 'wpsmshub_providers', [] );
+    }
+
+    public static function deactivate() {
+        // Keep data on deactivate; only remove on uninstall
+    }
+}
