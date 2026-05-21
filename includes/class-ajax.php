@@ -46,6 +46,8 @@ class Ajax {
             'smshub_get_live_feed',
             'smshub_get_provider_health',
             'smshub_get_reports',
+            'smshub_save_outbound_webhook',
+            'smshub_delete_outbound_webhook',
         ];
         foreach ( $actions as $action ) {
             add_action( "wp_ajax_{$action}", [ $this, $action ] );
@@ -585,5 +587,21 @@ class Ajax {
             default:
                 wp_send_json_error( 'Invalid report type.' );
         }
+    }
+
+    // ── Outbound Webhooks ───────────────────────────────────────────────
+    public function smshub_save_outbound_webhook() {
+        $this->check();
+        $url    = esc_url_raw( $_POST['webhook_url'] ?? '' );
+        $name   = sanitize_text_field( $_POST['webhook_name'] ?? 'Webhook' );
+        $events = array_map( 'sanitize_text_field', (array) ( $_POST['webhook_events'] ?? [ 'all' ] ) );
+        if ( ! $url ) wp_send_json_error( 'URL required.' );
+        Outbound_Webhooks::add_webhook( $url, $name, $events ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
+    }
+
+    public function smshub_delete_outbound_webhook() {
+        $this->check();
+        $index = (int) ( $_POST['index'] ?? -1 );
+        Outbound_Webhooks::remove_webhook( $index ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
     }
 }

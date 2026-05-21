@@ -113,6 +113,34 @@
     </div>
 
     <div class="smshub-card" style="margin-bottom:24px;">
+      <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:18px;">Outbound Webhooks</h2>
+      <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:16px;">Send real-time events to Zapier, Make, or any webhook URL. Events: message_sent, message_failed, message_delivered, inbound_received.</p>
+      <?php $outbound_webhooks = \WPSMSHub\Outbound_Webhooks::get_webhooks(); ?>
+      <?php if ( ! empty( $outbound_webhooks ) ): ?>
+      <div class="smshub-table-wrap" style="margin-bottom:16px;">
+        <table class="smshub-table">
+          <thead><tr><th>Name</th><th>URL</th><th>Events</th><th></th></tr></thead>
+          <tbody>
+            <?php foreach ( $outbound_webhooks as $i => $wh ): ?>
+            <tr>
+              <td style="font-weight:500;"><?= esc_html( $wh['name'] ) ?></td>
+              <td class="smshub-mono smshub-truncate" style="max-width:200px;"><?= esc_html( $wh['url'] ) ?></td>
+              <td><span class="badge badge-active"><?= esc_html( implode( ', ', $wh['events'] ) ) ?></span></td>
+              <td><button type="button" class="smshub-btn smshub-btn-danger smshub-btn-sm webhook-delete" data-index="<?= $i ?>">x</button></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
+      <div class="flex" style="gap:10px;">
+        <input id="smshub_webhook_url" class="smshub-input" type="url" placeholder="https://hooks.zapier.com/..." style="flex:1;">
+        <input id="smshub_webhook_name" class="smshub-input" type="text" placeholder="Name" style="max-width:120px;">
+        <button type="button" id="smshub-add-webhook" class="smshub-btn smshub-btn-ghost smshub-btn-sm">Add</button>
+      </div>
+    </div>
+
+    <div class="smshub-card" style="margin-bottom:24px;">
       <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:8px;">SMS Providers</h2>
       <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:20px;">Select your active provider and configure credentials. Click a card to activate it.</p>
       <div class="provider-grid">
