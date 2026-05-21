@@ -161,6 +161,35 @@ class Queue {
     }
 
     /**
+     * Schedule a message for future delivery.
+     */
+    public static function schedule( string $to, string $message, string $scheduled_at, array $args = [] ): int {
+        $args['scheduled_at'] = $scheduled_at;
+        $args['trigger_src']  = $args['trigger_src'] ?? 'scheduled';
+        return self::enqueue( SMS_Manager::normalize_phone( $to ), $message, $args );
+    }
+
+    /**
+     * Get upcoming scheduled messages (not yet sent).
+     */
+    public static function get_scheduled( int $limit = 50 ): array {
+        global $wpdb;
+        $table = $wpdb->prefix . 'smshub_queue';
+        return $wpdb->get_results( $wpdb->prepare(
+            "SELECT * FROM {$table} WHERE status IN ('queued','retry') AND trigger_src = 'scheduled' ORDER BY scheduled_at ASC LIMIT %d",
+            $limit
+        ), ARRAY_A );
+    }
+
+    /**
+     * Cancel a scheduled message.
+     */
+    public static function cancel( int $id ): bool {
+        global $wpdb;
+        return (bool) $wpdb->delete( $wpdb->prefix . 'smshub_queue', [ 'id' => $id, 'status' => 'queued' ], [ '%d', '%s' ] );
+    }
+
+    /**
      * Clean up old completed queue entries.
      */
     public static function cleanup( int $days = 7 ): int {

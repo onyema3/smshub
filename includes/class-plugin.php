@@ -24,6 +24,7 @@ class Plugin {
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-rest-api.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-queue.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-webhooks.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-templates.php';
 
         // Load all providers
         foreach ( glob( WPSMSHUB_PLUGIN_DIR . 'providers/class-*.php' ) as $file ) {

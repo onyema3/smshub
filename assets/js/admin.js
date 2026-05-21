@@ -73,29 +73,7 @@
     $c.html(`${len} chars · ${enc} · ${parts} SMS`).toggleClass('over', parts > 3);
   });
 
-  // ── Send SMS form ─────────────────────────────────────────────────────
-  $(document).on('submit', '#smshub-send-form', function(e) {
-    e.preventDefault();
-    const $btn = $(this).find('.smshub-btn-primary');
-    const $alert = $('#smshub-send-alert');
-    loader(true);
-    post('smshub_send_sms', {
-      to: $('#smshub_to').val(),
-      message: $('#smshub_message').val(),
-      provider: $('#smshub_provider').val(),
-      sender_id: $('#smshub_sender').val(),
-    }, $btn).done(r => {
-      loader(false);
-      if (r.success) {
-        alert_box($alert, 'success', 'Message sent successfully!');
-        $('#smshub_to').val('');
-        $('#smshub_message').val('').trigger('input');
-      } else {
-        const msg = r.data?.results?.[0]?.error || r.data || 'Send failed';
-        alert_box($alert, 'error', msg);
-      }
-    }).fail(() => { loader(false); alert_box($alert, 'error', 'Network error.'); });
-  });
+  // ── Send SMS form (handled below with schedule support) ────────────
 
   // ── Settings: provider select ─────────────────────────────────────────
   $(document).on('click', '.provider-card', function(e) {
@@ -258,21 +236,39 @@
     post('smshub_toggle_trigger', { id: $(this).data('id'), active: this.checked ? 1 : 0 });
   });
 
-  // ── Add contact modal ─────────────────────────────────────────────────
+  // ── Add/Edit contact modal ──────────────────────────────────────────
   $(document).on('click', '#smshub-new-contact', function() {
-    $('#smshub-contact-modal').addClass('open');
+    const $modal = $('#smshub-contact-modal');
+    $modal.find('form')[0].reset();
+    $modal.find('[name=contact_id]').val('');
+    $modal.find('.smshub-modal-header h2').text('Add Contact');
+    $modal.addClass('open');
+  });
+
+  $(document).on('click', '.contact-edit', function() {
+    const c = $(this).data('contact');
+    const $modal = $('#smshub-contact-modal');
+    $modal.find('[name=contact_id]').val(c.id);
+    $modal.find('[name=contact_name]').val(c.name);
+    $modal.find('[name=contact_phone]').val(c.phone);
+    $modal.find('[name=contact_group]').val(c.group_name);
+    $modal.find('.smshub-modal-header h2').text('Edit Contact');
+    $modal.addClass('open');
   });
 
   $(document).on('submit', '#smshub-contact-form', function(e) {
     e.preventDefault();
     const $btn = $(this).find('.smshub-btn-primary');
-    post('smshub_add_contact', {
+    const id = $('[name=contact_id]').val();
+    const action = id ? 'smshub_edit_contact' : 'smshub_add_contact';
+    post(action, {
+      id,
       name:  $('[name=contact_name]').val(),
       phone: $('[name=contact_phone]').val(),
       group: $('[name=contact_group]').val(),
     }, $btn).done(r => {
       if (r.success) location.reload();
-      else alert('Error: ' + (r.data || 'Duplicate or invalid phone.'));
+      else toast('Error: ' + (r.data || 'Duplicate or invalid phone.'), 'error');
     });
   });
 
@@ -281,6 +277,43 @@
     if (!confirm('Remove this contact?')) return;
     const $el = $(this);
     post('smshub_delete_contact', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
+  });
+
+  // ── Contact select all / bulk delete ──────────────────────────────────
+  $(document).on('change', '#smshub-select-all', function() {
+    $('.contact-check').prop('checked', this.checked);
+    toggleBulkBtn();
+  });
+  $(document).on('change', '.contact-check', toggleBulkBtn);
+  function toggleBulkBtn() {
+    const count = $('.contact-check:checked').length;
+    $('#smshub-bulk-delete').toggle(count > 0).text(`Delete Selected (${count})`);
+  }
+  $(document).on('click', '#smshub-bulk-delete', function() {
+    const ids = $('.contact-check:checked').map(function() { return $(this).val(); }).get();
+    if (!ids.length || !confirm(`Delete ${ids.length} contacts?`)) return;
+    post('smshub_bulk_delete_contacts', { ids }, $(this)).done(r => {
+      if (r.success) {
+        toast(`Deleted ${r.data.deleted} contacts`, 'success');
+        setTimeout(() => location.reload(), 500);
+      }
+    });
+  });
+
+  // ── Export contacts CSV ───────────────────────────────────────────────
+  $(document).on('click', '#smshub-export-csv', function() {
+    const group = $('#smshub-filter-group').val() || '';
+    post('smshub_export_contacts', { group }, $(this)).done(r => {
+      if (r.success && r.data.csv) {
+        const csv = r.data.csv.map(row => row.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'contacts-' + (group || 'all') + '.csv'; a.click();
+        URL.revokeObjectURL(url);
+        toast(`Exported ${r.data.count} contacts`, 'success');
+      }
+    });
   });
 
   // ── CSV import ────────────────────────────────────────────────────────
@@ -294,12 +327,110 @@
       .done(r => {
         loader(false);
         if (r.success) {
-          alert(`Imported ${r.data.imported} contacts. Errors: ${r.data.errors.length}`);
-          if (r.data.imported > 0) location.reload();
+          toast(`Imported ${r.data.imported} contacts. Errors: ${r.data.errors.length}`, 'success');
+          if (r.data.imported > 0) setTimeout(() => location.reload(), 500);
         } else {
-          alert('Import failed.');
+          toast('Import failed.', 'error');
         }
       });
+  });
+
+  // ── Templates ─────────────────────────────────────────────────────────
+  $(document).on('click', '#smshub-new-template', function() {
+    const $modal = $('#smshub-template-modal');
+    $modal.find('form')[0].reset();
+    $modal.find('[name=template_id]').val('');
+    $modal.find('.smshub-modal-header h2').text('New Template');
+    $modal.addClass('open');
+  });
+
+  $(document).on('click', '.template-edit', function() {
+    const t = $(this).data('template');
+    const $modal = $('#smshub-template-modal');
+    $modal.find('[name=template_id]').val(t.id);
+    $modal.find('[name=name]').val(t.name);
+    $modal.find('[name=category]').val(t.category);
+    $modal.find('[name=body]').val(t.body);
+    $modal.find('.smshub-modal-header h2').text('Edit Template');
+    $modal.addClass('open');
+  });
+
+  $(document).on('submit', '#smshub-template-form', function(e) {
+    e.preventDefault();
+    const $btn = $(this).find('.smshub-btn-primary');
+    post('smshub_save_template', {
+      template_id: $('[name=template_id]').val(),
+      name: $('[name=name]', this).val(),
+      category: $('[name=category]', this).val(),
+      body: $('[name=body]', this).val(),
+    }, $btn).done(r => {
+      if (r.success) location.reload();
+      else toast('Error saving template', 'error');
+    });
+  });
+
+  $(document).on('click', '.template-delete', function() {
+    if (!confirm('Delete this template?')) return;
+    const $el = $(this);
+    post('smshub_delete_template', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
+  });
+
+  $(document).on('click', '.template-use', function() {
+    const body = $(this).data('body');
+    // If we're on dashboard, fill the message textarea
+    if ($('#smshub_message').length) {
+      $('#smshub_message').val(body).trigger('input');
+      toast('Template loaded into message field', 'info');
+      $('html, body').animate({ scrollTop: $('#smshub_message').offset().top - 100 }, 300);
+    } else {
+      // Copy to clipboard
+      navigator.clipboard.writeText(body).then(() => toast('Template copied to clipboard', 'success'));
+    }
+  });
+
+  // ── Schedule SMS (from dashboard form) ────────────────────────────────
+  $(document).on('submit', '#smshub-send-form', function(e) {
+    e.preventDefault();
+    const scheduled = $('#smshub_schedule').val();
+    const $btn = $(this).find('.smshub-btn-primary');
+    const $alert = $('#smshub-send-alert');
+    loader(true);
+
+    if (scheduled) {
+      // Schedule for later
+      post('smshub_schedule_sms', {
+        to: $('#smshub_to').val(),
+        message: $('#smshub_message').val(),
+        provider: $('#smshub_provider').val(),
+        sender_id: $('#smshub_sender').val(),
+        scheduled_at: scheduled,
+      }, $btn).done(r => {
+        loader(false);
+        if (r.success) {
+          alert_box($alert, 'success', `${r.data.scheduled} message(s) scheduled!`);
+          $('#smshub_to').val(''); $('#smshub_message').val('').trigger('input'); $('#smshub_schedule').val('');
+        } else {
+          alert_box($alert, 'error', r.data || 'Schedule failed');
+        }
+      }).fail(() => { loader(false); alert_box($alert, 'error', 'Network error.'); });
+    } else {
+      // Send immediately
+      post('smshub_send_sms', {
+        to: $('#smshub_to').val(),
+        message: $('#smshub_message').val(),
+        provider: $('#smshub_provider').val(),
+        sender_id: $('#smshub_sender').val(),
+      }, $btn).done(r => {
+        loader(false);
+        if (r.success) {
+          alert_box($alert, 'success', r.queued ? r.message : 'Message sent successfully!');
+          $('#smshub_to').val(''); $('#smshub_message').val('').trigger('input');
+        } else {
+          const msg = r.data?.results?.[0]?.error || r.data || 'Send failed';
+          alert_box($alert, 'error', msg);
+        }
+      }).fail(() => { loader(false); alert_box($alert, 'error', 'Network error.'); });
+    }
   });
 
   // ── Clear log ─────────────────────────────────────────────────────────
@@ -358,6 +489,40 @@
       localStorage.setItem('smshub_theme', isLight ? 'light' : 'dark');
       $(this).find('.smshub-theme-label').text(isLight ? 'Dark' : 'Light');
       toast('Switched to ' + (isLight ? 'light' : 'dark') + ' mode', 'info');
+    });
+  });
+
+  // ── Analytics Chart (Dashboard) ─────────────────────────────────────
+  $(function() {
+    const $canvas = $('#smshub-chart');
+    if (!$canvas.length || typeof Chart === 'undefined') return;
+
+    post('smshub_get_analytics', { days: 30 }).done(r => {
+      if (!r.success || !r.data.daily) return;
+      const daily = r.data.daily;
+      const labels = daily.map(d => d.date.substring(5)); // MM-DD
+      const sent = daily.map(d => parseInt(d.sent) || 0);
+      const failed = daily.map(d => parseInt(d.failed) || 0);
+
+      new Chart($canvas[0].getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Sent', data: sent, backgroundColor: 'rgba(0, 228, 184, 0.7)', borderRadius: 4, barPercentage: 0.7 },
+            { label: 'Failed', data: failed, backgroundColor: 'rgba(255, 82, 119, 0.7)', borderRadius: 4, barPercentage: 0.7 },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#5e6680', font: { size: 10 } } },
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5e6680', font: { size: 10 } } },
+          }
+        }
+      });
     });
   });
 
