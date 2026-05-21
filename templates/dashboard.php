@@ -34,6 +34,18 @@
     </div>
   </div>
 
+  <!-- Analytics Chart -->
+  <div class="smshub-card" style="margin-bottom:28px;">
+    <div class="flex-between" style="margin-bottom:16px;">
+      <h2 class="mt-0 mb-0" style="font-size:17px;font-weight:700;">Messages (Last 30 Days)</h2>
+      <div class="flex" style="gap:8px;">
+        <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--hub-accent2);display:inline-block;"></span> Sent</span>
+        <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--hub-danger);display:inline-block;"></span> Failed</span>
+      </div>
+    </div>
+    <canvas id="smshub-chart" height="200" style="width:100%;max-height:200px;"></canvas>
+  </div>
+
   <!-- Compose -->
   <div class="smshub-cols">
     <div class="smshub-card">
@@ -65,6 +77,11 @@
             <label>Override Sender ID</label>
             <input id="smshub_sender" class="smshub-input" type="text" placeholder="Leave blank for default">
           </div>
+        </div>
+        <div class="smshub-form-group">
+          <label>Schedule (optional)</label>
+          <input id="smshub_schedule" class="smshub-input" type="datetime-local" placeholder="Leave empty to send now">
+          <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">Set a future date/time to schedule delivery</div>
         </div>
         <button type="submit" class="smshub-btn smshub-btn-primary" style="width:100%;margin-top:4px;">
           <span class="dashicons dashicons-email-alt" style="font-size:16px;width:16px;height:16px;"></span>

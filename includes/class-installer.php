@@ -77,11 +77,23 @@ class Installer {
             KEY idx_trigger (trigger_src)
         ) $charset;";
 
+        // SMS Templates table
+        $sql5 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_templates (
+            id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name       VARCHAR(200)    NOT NULL,
+            category   VARCHAR(100)    DEFAULT 'General',
+            body       TEXT            NOT NULL,
+            created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_category (category)
+        ) $charset;";
+
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql1 );
         dbDelta( $sql2 );
         dbDelta( $sql3 );
         dbDelta( $sql4 );
+        dbDelta( $sql5 );
 
         add_option( 'wpsmshub_version', WPSMSHUB_VERSION );
         add_option( 'wpsmshub_active_provider', '' );
