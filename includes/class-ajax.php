@@ -7,6 +7,7 @@ class Ajax {
     public function __construct() {
         $actions = [
             'smshub_send_sms',
+            'smshub_resend_sms',
             'smshub_save_settings',
             'smshub_test_provider',
             'smshub_get_balance',
@@ -44,6 +45,19 @@ class Ajax {
             'trigger_src' => 'manual',
         ] );
 
+        wp_send_json( $result );
+    }
+
+    public function smshub_resend_sms() {
+        $this->check();
+        $to       = sanitize_text_field( $_POST['to'] ?? '' );
+        $message  = sanitize_textarea_field( $_POST['message'] ?? '' );
+        $provider = sanitize_text_field( $_POST['provider'] ?? '' );
+        if ( ! $to || ! $message ) wp_send_json_error( 'Missing recipient or message.' );
+        $result = SMS_Manager::send( $to, $message, [
+            'provider'    => $provider ?: null,
+            'trigger_src' => 'resend',
+        ] );
         wp_send_json( $result );
     }
 

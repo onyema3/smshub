@@ -13,9 +13,31 @@
       .always(() => { if ($btn) $btn.prop('disabled', false).css('opacity', '1'); });
   }
 
+  // ── Toast notification system ───────────────────────────────────────
+  $('body').append('<div id="smshub-toasts" style="position:fixed;top:40px;right:20px;z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none;"></div>');
+  function toast(msg, type = 'info') {
+    const colors = { success: 'var(--hub-accent2)', error: 'var(--hub-danger)', info: 'var(--hub-accent-light)' };
+    const bgs = { success: 'var(--hub-accent2-glow)', error: 'var(--hub-danger-glow)', info: 'var(--hub-accent-glow)' };
+    const $t = $(`<div class="smshub-toast" style="
+      pointer-events:auto;background:var(--hub-surface-solid);border:1px solid ${colors[type]};
+      color:${colors[type]};padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;
+      font-family:var(--hub-font);box-shadow:0 8px 32px rgba(0,0,0,0.4);
+      transform:translateX(100%);opacity:0;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+      max-width:340px;backdrop-filter:blur(12px);
+    ">${msg}</div>`);
+    $('#smshub-toasts').append($t);
+    setTimeout(() => $t.css({ transform: 'translateX(0)', opacity: 1 }), 10);
+    const duration = type === 'error' ? 6000 : 4000;
+    setTimeout(() => {
+      $t.css({ transform: 'translateX(100%)', opacity: 0 });
+      setTimeout(() => $t.remove(), 300);
+    }, duration);
+  }
+
   function alert_box($el, type, msg) {
     $el.removeClass('success error info').addClass(type).html(msg).hide().fadeIn(200);
     if (type === 'success') setTimeout(() => $el.fadeOut(300), 4000);
+    toast(msg, type);
   }
 
   function loader(show) {
@@ -30,12 +52,25 @@
     setTimeout(() => $el.closest('tr').remove(), 300);
   }
 
-  // ── Char counter ─────────────────────────────────────────────────────
+  // ── Char counter with GSM/Unicode detection ────────────────────────
+  const GSM_CHARS = '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ !"#¤%&\'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà';
+  const GSM_EXT = '^{}\\[~]|€';
+  function isGSM7(text) {
+    for (let i = 0; i < text.length; i++) {
+      if (GSM_CHARS.indexOf(text[i]) === -1 && GSM_EXT.indexOf(text[i]) === -1) return false;
+    }
+    return true;
+  }
   $(document).on('input', '.smshub-sms-body', function() {
-    const len = $(this).val().length;
-    const parts = Math.ceil(len / 160) || 1;
+    const text = $(this).val();
+    const len = text.length;
+    const gsm = isGSM7(text);
+    const limit = gsm ? 160 : 70;
+    const multiLimit = gsm ? 153 : 67;
+    const parts = len <= limit ? 1 : Math.ceil(len / multiLimit);
+    const enc = gsm ? 'GSM-7' : 'Unicode';
     const $c = $(this).siblings('.char-counter');
-    $c.html(`${len} chars / ${parts} SMS`).toggleClass('over', len > 160 * 3);
+    $c.html(`${len} chars · ${enc} · ${parts} SMS`).toggleClass('over', parts > 3);
   });
 
   // ── Send SMS form ─────────────────────────────────────────────────────
@@ -141,6 +176,13 @@
         alert_box($alert, 'error', 'Balance check not supported or failed.');
       }
     });
+  });
+
+  // ── Copy API key ────────────────────────────────────────────────────
+  $(document).on('click', '#smshub-copy-key', function() {
+    const key = $('#smshub_rest_api_key').val();
+    if (!key) return toast('No key to copy', 'error');
+    navigator.clipboard.writeText(key).then(() => toast('API key copied!', 'success'));
   });
 
   // ── Trigger modal ─────────────────────────────────────────────────────
@@ -271,6 +313,22 @@
     post('smshub_delete_log', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
   });
 
+  // ── Resend SMS from log ───────────────────────────────────────────────
+  $(document).on('click', '.log-resend', function() {
+    const $el = $(this);
+    const data = { to: $el.data('to'), message: $el.data('message'), provider: $el.data('provider') };
+    $el.prop('disabled', true).css('opacity', '0.6');
+    post('smshub_resend_sms', data).done(r => {
+      $el.prop('disabled', false).css('opacity', '1');
+      if (r.success) {
+        toast('Message resent successfully!', 'success');
+        $el.closest('tr').find('.badge').removeClass('badge-failed').addClass('badge-sent').text('sent');
+      } else {
+        toast('Resend failed: ' + (r.data || 'Unknown error'), 'error');
+      }
+    });
+  });
+
   // ── Tabs ──────────────────────────────────────────────────────────────
   $(document).on('click', '.smshub-tab', function() {
     const target = $(this).data('tab');
@@ -284,6 +342,23 @@
   $(document).on('click', '#smshub-gen-key', function() {
     const key = Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2,'0')).join('');
     $('#smshub_rest_api_key').val(key).css('opacity', '0').animate({ opacity: 1 }, 300);
+  });
+
+  // ── Dark/Light mode toggle ──────────────────────────────────────────
+  $(function() {
+    const $wrap = $('.smshub-wrap');
+    if (!$wrap.length) return;
+    // Add toggle button to h1
+    const saved = localStorage.getItem('smshub_theme') || 'dark';
+    if (saved === 'light') $wrap.addClass('smshub-light');
+    const $toggle = $('<button class="smshub-theme-toggle" title="Toggle theme"><span class="dashicons dashicons-visibility" style="font-size:14px;width:14px;height:14px;"></span><span class="smshub-theme-label">' + (saved === 'light' ? 'Dark' : 'Light') + '</span></button>');
+    $wrap.find('h1').append($toggle);
+    $toggle.on('click', function() {
+      const isLight = $wrap.toggleClass('smshub-light').hasClass('smshub-light');
+      localStorage.setItem('smshub_theme', isLight ? 'light' : 'dark');
+      $(this).find('.smshub-theme-label').text(isLight ? 'Dark' : 'Light');
+      toast('Switched to ' + (isLight ? 'light' : 'dark') + ' mode', 'info');
+    });
   });
 
   // ── Entrance animations ───────────────────────────────────────────────
