@@ -11,6 +11,7 @@ class Ajax {
             'smshub_save_settings',
             'smshub_test_provider',
             'smshub_get_balance',
+            'smshub_get_queue_stats',
             'smshub_save_trigger',
             'smshub_delete_trigger',
             'smshub_toggle_trigger',
@@ -70,11 +71,22 @@ class Ajax {
         update_option( 'wpsmshub_active_provider', $provider_key );
         update_option( 'wpsmshub_admin_phone',     $admin_phone );
 
+        // Retry & Failover settings
+        $failover = sanitize_text_field( $_POST['failover_provider'] ?? '' );
+        $retries  = (int) ( $_POST['max_retries'] ?? 3 );
+        update_option( 'wpsmshub_failover_provider', $failover );
+        update_option( 'wpsmshub_max_retries', max( 0, min( $retries, 5 ) ) );
+
         foreach ( $settings as $key => $fields ) {
             $clean = array_map( 'sanitize_text_field', (array) $fields );
             update_option( 'wpsmshub_provider_' . sanitize_key( $key ), $clean );
         }
         wp_send_json_success( 'Settings saved.' );
+    }
+
+    public function smshub_get_queue_stats() {
+        $this->check();
+        wp_send_json_success( Queue::get_stats() );
     }
 
     public function smshub_test_provider() {

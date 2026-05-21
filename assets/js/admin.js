@@ -123,7 +123,7 @@
     e.preventDefault();
     const $btn = $(this).find('.smshub-btn-primary');
     const $alert = $('#smshub-settings-alert');
-    const data = { active_provider: $('#smshub_active_provider').val(), admin_phone: $('#smshub_admin_phone').val() };
+    const data = { active_provider: $('#smshub_active_provider').val(), admin_phone: $('#smshub_admin_phone').val(), failover_provider: $('#smshub_failover_provider').val(), max_retries: $('#smshub_max_retries').val() };
     data.provider_settings = {};
     $('.provider-card').each(function() {
       const key = $(this).data('key');

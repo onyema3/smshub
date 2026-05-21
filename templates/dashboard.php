@@ -24,6 +24,11 @@
       <div class="stat orange"><?= number_format($stats['today']) ?></div>
     </div>
     <div class="smshub-card">
+      <h3>Delivery Rate</h3>
+      <?php $dstats = \WPSMSHub\Log::get_delivery_stats(); ?>
+      <div class="stat green"><?= $dstats['delivery_rate'] ?>%</div>
+    </div>
+    <div class="smshub-card">
       <h3>Active Provider</h3>
       <div class="stat" style="font-size:20px;margin-top:6px;"><?= esc_html($active ?: '— none —') ?></div>
     </div>

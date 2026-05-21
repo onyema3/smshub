@@ -22,6 +22,8 @@ class Plugin {
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-triggers.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-ajax.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-rest-api.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-queue.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-webhooks.php';
 
         // Load all providers
         foreach ( glob( WPSMSHUB_PLUGIN_DIR . 'providers/class-*.php' ) as $file ) {
@@ -37,6 +39,8 @@ class Plugin {
         new Triggers();
         new Ajax();
         new REST_API();
+        new Queue();
+        new Webhooks();
 
         do_action( 'wp_sms_hub_loaded' );
     }
