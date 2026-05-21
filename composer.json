@@ -1,0 +1,26 @@
+{
+    "name": "onyema3/wp-sms-hub",
+    "description": "Multi-provider SMS gateway plugin for WordPress",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "WPSMSHub\\": "includes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WPSMSHub\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite=Unit"
+    }
+}
