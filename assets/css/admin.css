@@ -618,3 +618,62 @@
   align-items: center;
   gap: 12px;
 }
+
+
+/* ── Light Mode ──────────────────────────────────────── */
+.smshub-wrap.smshub-light {
+  --hub-bg: #f5f7fa;
+  --hub-surface: rgba(255, 255, 255, 0.9);
+  --hub-surface-solid: #ffffff;
+  --hub-surface-hover: rgba(240, 242, 248, 0.95);
+  --hub-border: rgba(0, 0, 0, 0.08);
+  --hub-border-hover: rgba(0, 0, 0, 0.15);
+  --hub-text: #1a1d27;
+  --hub-text-secondary: #4a5068;
+  --hub-muted: #8891a5;
+}
+.smshub-wrap.smshub-light .smshub-input,
+.smshub-wrap.smshub-light .smshub-select,
+.smshub-wrap.smshub-light .smshub-textarea {
+  background: rgba(245, 247, 250, 0.8);
+}
+.smshub-wrap.smshub-light .provider-card {
+  background: rgba(245, 247, 250, 0.7);
+}
+.smshub-wrap.smshub-light .smshub-table th {
+  background: rgba(245, 247, 250, 0.8);
+}
+.smshub-wrap.smshub-light .smshub-modal {
+  background: #ffffff;
+}
+.smshub-wrap.smshub-light h1 .dashicons {
+  -webkit-text-fill-color: initial;
+  color: var(--hub-accent);
+}
+.smshub-wrap.smshub-light .smshub-card .stat {
+  -webkit-text-fill-color: initial;
+}
+.smshub-wrap.smshub-light .smshub-card .stat { color: var(--hub-accent); }
+.smshub-wrap.smshub-light .smshub-card .stat.green { color: #00b894; }
+.smshub-wrap.smshub-light .smshub-card .stat.red { color: var(--hub-danger); }
+.smshub-wrap.smshub-light .smshub-card .stat.orange { color: #e67e22; }
+
+/* ── Theme Toggle ────────────────────────────────────── */
+.smshub-theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--hub-surface);
+  border: 1px solid var(--hub-border);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--hub-muted);
+  transition: var(--hub-transition);
+}
+.smshub-theme-toggle:hover {
+  border-color: var(--hub-border-hover);
+  color: var(--hub-text);
+}
