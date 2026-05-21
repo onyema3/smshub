@@ -8,6 +8,8 @@ use WPSMSHub\Log;
 use WPSMSHub\Contacts;
 use WPSMSHub\Triggers;
 use WPSMSHub\Templates;
+use WPSMSHub\Sub_Accounts;
+use WPSMSHub\Campaigns;
 
 class Admin {
     public function __construct() {
@@ -25,12 +27,14 @@ class Admin {
             'dashicons-smartphone',
             56
         );
-        add_submenu_page( 'wp-sms-hub', 'Send SMS',    'Send SMS',    'manage_options', 'wp-sms-hub',          [ $this, 'page_dashboard' ] );
-        add_submenu_page( 'wp-sms-hub', 'Templates',   'Templates',   'manage_options', 'smshub-templates',    [ $this, 'page_templates' ] );
-        add_submenu_page( 'wp-sms-hub', 'Triggers',    'Triggers',    'manage_options', 'smshub-triggers',     [ $this, 'page_triggers'  ] );
-        add_submenu_page( 'wp-sms-hub', 'Contacts',    'Contacts',    'manage_options', 'smshub-contacts',     [ $this, 'page_contacts'  ] );
-        add_submenu_page( 'wp-sms-hub', 'SMS Log',     'SMS Log',     'manage_options', 'smshub-log',          [ $this, 'page_log'       ] );
-        add_submenu_page( 'wp-sms-hub', 'Settings',    'Settings',    'manage_options', 'smshub-settings',     [ $this, 'page_settings'  ] );
+        add_submenu_page( 'wp-sms-hub', 'Send SMS',      'Send SMS',      'manage_options', 'wp-sms-hub',            [ $this, 'page_dashboard' ] );
+        add_submenu_page( 'wp-sms-hub', 'Templates',     'Templates',     'manage_options', 'smshub-templates',      [ $this, 'page_templates' ] );
+        add_submenu_page( 'wp-sms-hub', 'Triggers',      'Triggers',      'manage_options', 'smshub-triggers',       [ $this, 'page_triggers'  ] );
+        add_submenu_page( 'wp-sms-hub', 'Contacts',      'Contacts',      'manage_options', 'smshub-contacts',       [ $this, 'page_contacts'  ] );
+        add_submenu_page( 'wp-sms-hub', 'Campaigns',     'Campaigns',     'manage_options', 'smshub-campaigns',      [ $this, 'page_campaigns' ] );
+        add_submenu_page( 'wp-sms-hub', 'Sub-Accounts',  'Sub-Accounts',  'manage_options', 'smshub-sub-accounts',   [ $this, 'page_sub_accounts' ] );
+        add_submenu_page( 'wp-sms-hub', 'SMS Log',       'SMS Log',       'manage_options', 'smshub-log',            [ $this, 'page_log'       ] );
+        add_submenu_page( 'wp-sms-hub', 'Settings',      'Settings',      'manage_options', 'smshub-settings',       [ $this, 'page_settings'  ] );
     }
 
     public function enqueue_assets( $hook ) {
@@ -101,5 +105,17 @@ class Admin {
         $templates  = Templates::get_all();
         $categories = Templates::get_categories();
         include \WPSMSHUB_PLUGIN_DIR . 'templates/sms-templates.php';
+    }
+
+    public function page_campaigns() {
+        $campaigns = Campaigns::get_all();
+        $groups    = Contacts::get_groups();
+        $providers = SMS_Manager::get_providers();
+        include \WPSMSHUB_PLUGIN_DIR . 'templates/campaigns.php';
+    }
+
+    public function page_sub_accounts() {
+        $accounts = Sub_Accounts::get_all();
+        include \WPSMSHUB_PLUGIN_DIR . 'templates/sub-accounts.php';
     }
 }
