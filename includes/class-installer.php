@@ -88,12 +88,64 @@ class Installer {
             KEY idx_category (category)
         ) $charset;";
 
+        // Sub-Accounts table
+        $sql6 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_sub_accounts (
+            id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name          VARCHAR(200)    NOT NULL,
+            api_key       VARCHAR(64)     NOT NULL,
+            daily_limit   INT UNSIGNED    NOT NULL DEFAULT 100,
+            monthly_limit INT UNSIGNED    NOT NULL DEFAULT 3000,
+            total_sent    BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            status        ENUM('active','suspended') NOT NULL DEFAULT 'active',
+            created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_api_key (api_key)
+        ) $charset;";
+
+        // Campaigns table
+        $sql7 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_campaigns (
+            id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name             VARCHAR(200)    NOT NULL,
+            message          TEXT            NOT NULL,
+            provider         VARCHAR(50)     DEFAULT '',
+            sender_id        VARCHAR(20)     DEFAULT '',
+            audience_type    ENUM('group','all','numbers') NOT NULL DEFAULT 'numbers',
+            audience_value   TEXT            DEFAULT NULL,
+            status           VARCHAR(20)     NOT NULL DEFAULT 'draft',
+            total_recipients INT UNSIGNED    NOT NULL DEFAULT 0,
+            sent_count       INT UNSIGNED    NOT NULL DEFAULT 0,
+            failed_count     INT UNSIGNED    NOT NULL DEFAULT 0,
+            scheduled_at     DATETIME        DEFAULT NULL,
+            started_at       DATETIME        DEFAULT NULL,
+            completed_at     DATETIME        DEFAULT NULL,
+            created_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_status (status),
+            KEY idx_scheduled (scheduled_at)
+        ) $charset;";
+
+        // Link Tracker table
+        $sql8 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_links (
+            id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            original_url TEXT            NOT NULL,
+            short_code   VARCHAR(6)      NOT NULL,
+            campaign_id  BIGINT UNSIGNED DEFAULT NULL,
+            clicks       BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            created_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_short_code (short_code),
+            KEY idx_campaign (campaign_id)
+        ) $charset;";
+
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql1 );
         dbDelta( $sql2 );
         dbDelta( $sql3 );
         dbDelta( $sql4 );
         dbDelta( $sql5 );
+        dbDelta( $sql6 );
+        dbDelta( $sql7 );
+        dbDelta( $sql8 );
 
         add_option( 'wpsmshub_version', WPSMSHUB_VERSION );
         add_option( 'wpsmshub_active_provider', '' );

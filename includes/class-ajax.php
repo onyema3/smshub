@@ -28,6 +28,14 @@ class Ajax {
             'smshub_get_analytics',
             'smshub_delete_log',
             'smshub_clear_log',
+            'smshub_create_sub_account',
+            'smshub_delete_sub_account',
+            'smshub_toggle_sub_account',
+            'smshub_save_campaign',
+            'smshub_start_campaign',
+            'smshub_pause_campaign',
+            'smshub_delete_campaign',
+            'smshub_get_campaign_stats',
         ];
         foreach ( $actions as $action ) {
             add_action( "wp_ajax_{$action}", [ $this, $action ] );
@@ -328,5 +336,94 @@ class Ajax {
             'by_provider' => $by_provider,
             'costs'       => $costs,
         ] );
+    }
+
+    // ── Sub-Accounts ────────────────────────────────────────────────────
+    public function smshub_create_sub_account() {
+        $this->check();
+        $name          = sanitize_text_field( $_POST['name'] ?? '' );
+        $daily_limit   = (int) ( $_POST['daily_limit'] ?? 100 );
+        $monthly_limit = (int) ( $_POST['monthly_limit'] ?? 3000 );
+
+        if ( ! $name ) wp_send_json_error( 'Name is required.' );
+
+        $id = Sub_Accounts::create([
+            'name'          => $name,
+            'daily_limit'   => $daily_limit,
+            'monthly_limit' => $monthly_limit,
+        ]);
+
+        if ( $id ) {
+            $account = Sub_Accounts::get( $id );
+            wp_send_json_success( $account );
+        }
+        wp_send_json_error( 'Failed to create sub-account.' );
+    }
+
+    public function smshub_delete_sub_account() {
+        $this->check();
+        $id = (int) ( $_POST['id'] ?? 0 );
+        Sub_Accounts::delete( $id ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
+    }
+
+    public function smshub_toggle_sub_account() {
+        $this->check();
+        $id     = (int) ( $_POST['id'] ?? 0 );
+        $active = (int) ( $_POST['active'] ?? 0 );
+        $status = $active ? 'active' : 'suspended';
+        Sub_Accounts::update( $id, [ 'status' => $status ] ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
+    }
+
+    // ── Campaigns ───────────────────────────────────────────────────────
+    public function smshub_save_campaign() {
+        $this->check();
+        $id   = (int) ( $_POST['campaign_id'] ?? 0 );
+        $data = [
+            'name'           => sanitize_text_field( $_POST['name'] ?? '' ),
+            'message'        => sanitize_textarea_field( $_POST['message'] ?? '' ),
+            'audience_type'  => sanitize_text_field( $_POST['audience_type'] ?? 'numbers' ),
+            'audience_value' => sanitize_textarea_field( $_POST['audience_value'] ?? '' ),
+            'provider'       => sanitize_text_field( $_POST['provider'] ?? '' ),
+            'sender_id'      => sanitize_text_field( $_POST['sender_id'] ?? '' ),
+            'scheduled_at'   => sanitize_text_field( $_POST['scheduled_at'] ?? '' ),
+        ];
+
+        if ( ! $data['name'] || ! $data['message'] ) wp_send_json_error( 'Name and message required.' );
+
+        if ( $id ) {
+            $ok = Campaigns::update( $id, $data );
+        } else {
+            $ok = Campaigns::create( $data );
+        }
+        $ok ? wp_send_json_success( [ 'id' => $ok ] ) : wp_send_json_error( 'Failed to save campaign.' );
+    }
+
+    public function smshub_start_campaign() {
+        $this->check();
+        $id     = (int) ( $_POST['id'] ?? 0 );
+        $result = Campaigns::start( $id );
+        if ( $result['success'] ) {
+            wp_send_json_success( $result );
+        }
+        wp_send_json_error( $result['error'] ?? 'Failed to start campaign.' );
+    }
+
+    public function smshub_pause_campaign() {
+        $this->check();
+        $id = (int) ( $_POST['id'] ?? 0 );
+        Campaigns::pause( $id ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
+    }
+
+    public function smshub_delete_campaign() {
+        $this->check();
+        $id = (int) ( $_POST['id'] ?? 0 );
+        Campaigns::delete( $id ) ? wp_send_json_success() : wp_send_json_error( 'Failed.' );
+    }
+
+    public function smshub_get_campaign_stats() {
+        $this->check();
+        $id    = (int) ( $_POST['id'] ?? 0 );
+        $stats = Campaigns::get_stats( $id );
+        wp_send_json_success( $stats );
     }
 }

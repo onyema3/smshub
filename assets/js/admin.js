@@ -475,6 +475,66 @@
     $('#smshub_rest_api_key').val(key).css('opacity', '0').animate({ opacity: 1 }, 300);
   });
 
+  // ── Sub-Accounts ────────────────────────────────────────────────────
+  $(document).on('click', '#smshub-new-subaccount', function() {
+    $('#smshub-subaccount-modal').addClass('open');
+  });
+  $(document).on('submit', '#smshub-subaccount-form', function(e) {
+    e.preventDefault();
+    const $btn = $(this).find('.smshub-btn-primary');
+    post('smshub_create_sub_account', {
+      name: $('[name=sa_name]').val(),
+      daily_limit: $('[name=sa_daily_limit]').val(),
+      monthly_limit: $('[name=sa_monthly_limit]').val(),
+    }, $btn).done(r => { if (r.success) location.reload(); else toast(r.data || 'Error', 'error'); });
+  });
+  $(document).on('click', '.sa-delete', function() {
+    if (!confirm('Delete this sub-account?')) return;
+    const $el = $(this);
+    post('smshub_delete_sub_account', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
+  });
+  $(document).on('change', '.sa-toggle', function() {
+    post('smshub_toggle_sub_account', { id: $(this).data('id'), active: this.checked ? 1 : 0 });
+  });
+
+  // ── Campaigns ───────────────────────────────────────────────────────
+  $(document).on('click', '#smshub-new-campaign', function() {
+    const $modal = $('#smshub-campaign-modal');
+    $modal.find('form')[0].reset();
+    $modal.find('[name=campaign_id]').val('');
+    $modal.find('.smshub-modal-header h2').text('New Campaign');
+    $modal.addClass('open');
+  });
+  $(document).on('submit', '#smshub-campaign-form', function(e) {
+    e.preventDefault();
+    const $btn = $(this).find('.smshub-btn-primary');
+    post('smshub_save_campaign', {
+      campaign_id: $('[name=campaign_id]').val(),
+      name: $('[name=camp_name]').val(),
+      message: $('[name=camp_message]').val(),
+      audience_type: $('[name=camp_audience_type]').val(),
+      audience_value: $('[name=camp_audience_value]').val(),
+      provider: $('[name=camp_provider]').val(),
+      sender_id: $('[name=camp_sender_id]').val(),
+      scheduled_at: $('[name=camp_scheduled_at]').val(),
+    }, $btn).done(r => { if (r.success) location.reload(); else toast(r.data || 'Error', 'error'); });
+  });
+  $(document).on('click', '.campaign-start', function() {
+    const $el = $(this);
+    post('smshub_start_campaign', { id: $el.data('id') }, $el).done(r => {
+      if (r.success) { toast('Campaign started!', 'success'); location.reload(); }
+      else toast(r.data || 'Failed to start', 'error');
+    });
+  });
+  $(document).on('click', '.campaign-pause', function() {
+    post('smshub_pause_campaign', { id: $(this).data('id') }).done(r => { if (r.success) location.reload(); });
+  });
+  $(document).on('click', '.campaign-delete', function() {
+    if (!confirm('Delete this campaign?')) return;
+    const $el = $(this);
+    post('smshub_delete_campaign', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
+  });
+
   // ── Dark/Light mode toggle ──────────────────────────────────────────
   $(function() {
     const $wrap = $('.smshub-wrap');
