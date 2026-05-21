@@ -25,6 +25,8 @@ class Plugin {
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-queue.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-webhooks.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-templates.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-rate-limiter.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-woocommerce.php';
 
         // Load all providers
         foreach ( glob( WPSMSHUB_PLUGIN_DIR . 'providers/class-*.php' ) as $file ) {
@@ -42,6 +44,8 @@ class Plugin {
         new REST_API();
         new Queue();
         new Webhooks();
+        new Rate_Limiter();
+        new WooCommerce_Integration();
 
         do_action( 'wp_sms_hub_loaded' );
     }

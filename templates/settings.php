@@ -67,6 +67,17 @@
     </div>
 
     <div class="smshub-card" style="margin-bottom:24px;">
+      <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:18px;">Sender IDs</h2>
+      <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:16px;">Register your approved sender IDs here. Most Nigerian providers require DND-approved sender names.</p>
+      <?php $sender_ids = get_option('wpsmshub_sender_ids', ''); ?>
+      <div class="smshub-form-group">
+        <label>Approved Sender IDs</label>
+        <textarea id="smshub_sender_ids" name="sender_ids" class="smshub-textarea" style="min-height:80px;" placeholder="One per line, e.g.&#10;MyBrand&#10;CompanyNG&#10;ShopAlert"><?= esc_textarea($sender_ids) ?></textarea>
+        <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">One per line. Max 11 characters each. These will appear in dropdown when overriding sender ID.</div>
+      </div>
+    </div>
+
+    <div class="smshub-card" style="margin-bottom:24px;">
       <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:8px;">SMS Providers</h2>
       <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:20px;">Select your active provider and configure credentials. Click a card to activate it.</p>
       <div class="provider-grid">

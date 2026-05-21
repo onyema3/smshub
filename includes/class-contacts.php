@@ -57,6 +57,11 @@ class Contacts {
         return (bool) $wpdb->delete( self::table(), [ 'id' => $id ], [ '%d' ] );
     }
 
+    public static function delete_by_phone( string $phone ): bool {
+        global $wpdb;
+        return (bool) $wpdb->delete( $wpdb->prefix . 'smshub_contacts', [ 'phone' => $phone ], [ '%s' ] );
+    }
+
     public static function get_phones_by_group( string $group ): array {
         global $wpdb;
         return $wpdb->get_col( $wpdb->prepare(

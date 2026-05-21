@@ -118,6 +118,20 @@ class SMS_Manager {
         string $message,
         array $args
     ): array {
+        // Rate limit check
+        $limit_check = apply_filters( 'wp_sms_hub_before_send', true, $to, $args );
+        if ( is_string( $limit_check ) ) {
+            Log::add( [
+                'provider'    => $provider_key,
+                'recipient'   => $to,
+                'message'     => $message,
+                'status'      => 'blocked',
+                'error_msg'   => $limit_check,
+                'trigger_src' => $args['trigger_src'] ?? null,
+            ] );
+            return [ 'success' => false, 'error' => $limit_check ];
+        }
+
         $max_retries   = (int) get_option( 'wpsmshub_max_retries', self::MAX_RETRIES );
         $failover_key  = get_option( 'wpsmshub_failover_provider', '' );
         $result        = null;
