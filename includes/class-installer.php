@@ -137,6 +137,33 @@ class Installer {
             KEY idx_campaign (campaign_id)
         ) $charset;";
 
+        // Workflows table
+        $sql_workflows = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_workflows (
+            id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name          VARCHAR(200)    NOT NULL,
+            trigger_event VARCHAR(100)    NOT NULL,
+            steps         LONGTEXT        NOT NULL,
+            active        TINYINT(1)      NOT NULL DEFAULT 1,
+            created_at    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_trigger (trigger_event),
+            KEY idx_active (active)
+        ) $charset;";
+
+        // Workflow Executions table
+        $sql_executions = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_workflow_executions (
+            id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            workflow_id  BIGINT UNSIGNED NOT NULL,
+            current_step INT             NOT NULL DEFAULT 0,
+            context      LONGTEXT        DEFAULT NULL,
+            status       VARCHAR(20)     NOT NULL DEFAULT 'running',
+            next_run_at  DATETIME        NOT NULL,
+            created_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_status_next (status, next_run_at),
+            KEY idx_workflow (workflow_id)
+        ) $charset;";
+
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql1 );
         dbDelta( $sql2 );
@@ -146,6 +173,8 @@ class Installer {
         dbDelta( $sql6 );
         dbDelta( $sql7 );
         dbDelta( $sql8 );
+        dbDelta( $sql_workflows );
+        dbDelta( $sql_executions );
 
         add_option( 'wpsmshub_version', WPSMSHUB_VERSION );
         add_option( 'wpsmshub_active_provider', '' );

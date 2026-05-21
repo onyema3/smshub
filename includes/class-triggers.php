@@ -48,20 +48,25 @@ class Triggers {
         $event = current_filter();
         $args  = func_get_args();
         $rules = $this->get_active_rules_for( $event );
-        if ( empty( $rules ) ) return;
 
-        foreach ( $rules as $rule ) {
-            $context    = $this->build_context( $event, $args );
-            $message    = $this->interpolate( $rule['message_tpl'], $context );
-            $recipients = $this->resolve_recipients( $rule['recipients'], $context );
-            if ( empty( $recipients ) ) continue;
+        if ( ! empty( $rules ) ) {
+            foreach ( $rules as $rule ) {
+                $context    = $this->build_context( $event, $args );
+                $message    = $this->interpolate( $rule['message_tpl'], $context );
+                $recipients = $this->resolve_recipients( $rule['recipients'], $context );
+                if ( empty( $recipients ) ) continue;
 
-            SMS_Manager::send( $recipients, $message, [
-                'provider'    => $rule['provider'] ?: null,
-                'sender_id'   => $rule['sender_id'] ?: null,
-                'trigger_src' => 'trigger:' . $rule['id'] . ':' . $event,
-            ] );
+                SMS_Manager::send( $recipients, $message, [
+                    'provider'    => $rule['provider'] ?: null,
+                    'sender_id'   => $rule['sender_id'] ?: null,
+                    'trigger_src' => 'trigger:' . $rule['id'] . ':' . $event,
+                ] );
+            }
         }
+
+        // Trigger any workflows listening to this event
+        $context = $this->build_context( $event, $args );
+        Workflows::trigger( $event, $context );
     }
 
     private function get_active_rules_for( string $event ): array {
