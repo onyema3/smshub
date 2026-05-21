@@ -23,6 +23,7 @@
             <input id="smshub_rest_api_key" name="rest_api_key" class="smshub-input smshub-mono" type="text"
               value="<?= esc_attr($api_key) ?>" placeholder="Generate a key for external API access">
             <button type="button" id="smshub-gen-key" class="smshub-btn smshub-btn-ghost smshub-btn-sm">Generate</button>
+            <button type="button" id="smshub-copy-key" class="smshub-btn smshub-btn-ghost smshub-btn-sm">Copy</button>
           </div>
         </div>
       </div>

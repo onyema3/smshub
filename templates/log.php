@@ -66,6 +66,9 @@
               <?= esc_html(date('d M y H:i', strtotime($row['created_at']))) ?>
             </td>
             <td>
+              <?php if ($row['status'] === 'failed'): ?>
+              <button class="smshub-btn smshub-btn-ghost smshub-btn-sm log-resend" data-to="<?= esc_attr($row['recipient']) ?>" data-message="<?= esc_attr($row['message']) ?>" data-provider="<?= esc_attr($row['provider']) ?>">Resend</button>
+              <?php endif; ?>
               <button class="smshub-btn smshub-btn-ghost smshub-btn-sm log-delete" data-id="<?= (int)$row['id'] ?>">x</button>
             </td>
           </tr>
