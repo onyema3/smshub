@@ -30,6 +30,43 @@
     </div>
 
     <div class="smshub-card" style="margin-bottom:24px;">
+      <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:18px;">Reliability</h2>
+      <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:20px;">Configure retry behavior and failover for maximum delivery reliability.</p>
+      <?php
+        $failover   = get_option('wpsmshub_failover_provider', '');
+        $maxRetries = get_option('wpsmshub_max_retries', 3);
+      ?>
+      <div class="smshub-cols">
+        <div class="smshub-form-group">
+          <label>Max Retries</label>
+          <select id="smshub_max_retries" name="max_retries" class="smshub-select">
+            <option value="0" <?= selected($maxRetries, 0, false) ?>>No retries</option>
+            <option value="1" <?= selected($maxRetries, 1, false) ?>>1 retry</option>
+            <option value="2" <?= selected($maxRetries, 2, false) ?>>2 retries</option>
+            <option value="3" <?= selected($maxRetries, 3, false) ?>>3 retries (recommended)</option>
+            <option value="5" <?= selected($maxRetries, 5, false) ?>>5 retries</option>
+          </select>
+          <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">Exponential backoff: 5s, 30s, 2min between retries</div>
+        </div>
+        <div class="smshub-form-group">
+          <label>Failover Provider</label>
+          <select id="smshub_failover_provider" name="failover_provider" class="smshub-select">
+            <option value="">None (no failover)</option>
+            <?php foreach ($providers as $key => $p): ?>
+              <option value="<?= esc_attr($key) ?>" <?= selected($failover, $key, false) ?>><?= esc_html($p->get_label()) ?></option>
+            <?php endforeach; ?>
+          </select>
+          <div style="font-size:11px;color:var(--hub-muted);margin-top:6px;">If primary provider fails after all retries, try this one</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:14px;background:rgba(10,12,16,0.4);border:1px solid var(--hub-border);border-radius:var(--hub-radius-sm);font-size:12px;color:var(--hub-text-secondary);">
+        <strong style="color:var(--hub-text);">Webhook URL for Delivery Reports</strong><br>
+        <code class="smshub-mono" style="color:var(--hub-accent2);margin-top:6px;display:inline-block;"><?= esc_url(rest_url('wp-sms-hub/v1/webhook/')) ?>{provider}</code>
+        <br><span style="color:var(--hub-muted);margin-top:4px;display:inline-block;">Configure this URL in your provider's dashboard to receive delivery status updates.</span>
+      </div>
+    </div>
+
+    <div class="smshub-card" style="margin-bottom:24px;">
       <h2 class="mt-0" style="font-size:17px;font-weight:700;margin-bottom:8px;">SMS Providers</h2>
       <p style="color:var(--hub-text-secondary);font-size:13px;margin-bottom:20px;">Select your active provider and configure credentials. Click a card to activate it.</p>
       <div class="provider-grid">

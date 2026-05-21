@@ -57,13 +57,36 @@ class Installer {
             KEY idx_active (active)
         ) $charset;";
 
+        // Message Queue table
+        $sql4 = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}smshub_queue (
+            id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            recipient    VARCHAR(20)     NOT NULL,
+            message      TEXT            NOT NULL,
+            provider     VARCHAR(50)     DEFAULT '',
+            sender_id    VARCHAR(20)     DEFAULT '',
+            trigger_src  VARCHAR(100)    DEFAULT '',
+            status       VARCHAR(20)     NOT NULL DEFAULT 'queued',
+            attempts     TINYINT         NOT NULL DEFAULT 0,
+            max_attempts TINYINT         NOT NULL DEFAULT 3,
+            last_error   TEXT            DEFAULT NULL,
+            scheduled_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            sent_at      DATETIME        DEFAULT NULL,
+            created_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_status_scheduled (status, scheduled_at),
+            KEY idx_trigger (trigger_src)
+        ) $charset;";
+
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql1 );
         dbDelta( $sql2 );
         dbDelta( $sql3 );
+        dbDelta( $sql4 );
 
         add_option( 'wpsmshub_version', WPSMSHUB_VERSION );
         add_option( 'wpsmshub_active_provider', '' );
+        add_option( 'wpsmshub_failover_provider', '' );
+        add_option( 'wpsmshub_max_retries', 3 );
         add_option( 'wpsmshub_providers', [] );
     }
 

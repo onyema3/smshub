@@ -82,4 +82,25 @@ class Log {
         ) );
         return $wpdb->rows_affected;
     }
+
+    public static function update_status( int $id, string $status ): bool {
+        global $wpdb;
+        return (bool) $wpdb->update( self::table(), [ 'status' => $status ], [ 'id' => $id ] );
+    }
+
+    public static function get_delivery_stats(): array {
+        global $wpdb;
+        $table = self::table();
+        $total     = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE direction='outbound'" );
+        $delivered = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status='delivered'" );
+        $sent      = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status='sent'" );
+        $failed    = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status='failed'" );
+        return [
+            'total'         => $total,
+            'delivered'     => $delivered,
+            'sent'          => $sent,
+            'failed'        => $failed,
+            'delivery_rate' => $total > 0 ? round( ( $delivered + $sent ) / $total * 100, 1 ) : 0,
+        ];
+    }
 }
