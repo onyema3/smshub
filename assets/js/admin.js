@@ -8,17 +8,27 @@
 
   // ── Utility ──────────────────────────────────────────────────────────
   function post(action, data, $btn) {
-    if ($btn) $btn.prop('disabled', true);
+    if ($btn) $btn.prop('disabled', true).css('opacity', '0.6');
     return $.post(ajax, { action, nonce, ...data })
-      .always(() => { if ($btn) $btn.prop('disabled', false); });
+      .always(() => { if ($btn) $btn.prop('disabled', false).css('opacity', '1'); });
   }
 
   function alert_box($el, type, msg) {
-    $el.removeClass('success error info').addClass(type).html(msg).show();
-    if (type === 'success') setTimeout(() => $el.fadeOut(), 4000);
+    $el.removeClass('success error info').addClass(type).html(msg).hide().fadeIn(200);
+    if (type === 'success') setTimeout(() => $el.fadeOut(300), 4000);
   }
 
-  function loader(show) { $('.smshub-loader').toggleClass('active', show); }
+  function loader(show) {
+    const $l = $('.smshub-loader');
+    if (show) $l.addClass('active').hide().fadeIn(150);
+    else $l.fadeOut(150, function() { $(this).removeClass('active'); });
+  }
+
+  // ── Smooth row removal ───────────────────────────────────────────────
+  function removeRow($el) {
+    $el.closest('tr').css({ transition: 'all 0.3s ease', opacity: 0, transform: 'translateX(-10px)' });
+    setTimeout(() => $el.closest('tr').remove(), 300);
+  }
 
   // ── Char counter ─────────────────────────────────────────────────────
   $(document).on('input', '.smshub-sms-body', function() {
@@ -42,11 +52,12 @@
     }, $btn).done(r => {
       loader(false);
       if (r.success) {
-        alert_box($alert, 'success', '✓ Message sent successfully!');
-        $('#smshub_to').val(''); $('#smshub_message').val('');
+        alert_box($alert, 'success', 'Message sent successfully!');
+        $('#smshub_to').val('');
+        $('#smshub_message').val('').trigger('input');
       } else {
         const msg = r.data?.results?.[0]?.error || r.data || 'Send failed';
-        alert_box($alert, 'error', '✗ ' + msg);
+        alert_box($alert, 'error', msg);
       }
     }).fail(() => { loader(false); alert_box($alert, 'error', 'Network error.'); });
   });
@@ -54,8 +65,11 @@
   // ── Settings: provider select ─────────────────────────────────────────
   $(document).on('click', '.provider-card', function() {
     const key = $(this).data('key');
-    $('.provider-card').removeClass('active').find('.provider-fields').hide();
-    $(this).addClass('active').find('.provider-fields').show();
+    $('.provider-card').removeClass('active').find('.active-dot').remove();
+    $('.provider-card').find('.provider-fields').slideUp(200);
+    $(this).addClass('active');
+    $(this).prepend('<div class="active-dot" title="Active"></div>');
+    $(this).find('.provider-fields').slideDown(250);
     $('#smshub_active_provider').val(key);
   });
 
@@ -65,7 +79,6 @@
     const $btn = $(this).find('.smshub-btn-primary');
     const $alert = $('#smshub-settings-alert');
     const data = { active_provider: $('#smshub_active_provider').val(), admin_phone: $('#smshub_admin_phone').val() };
-    // Gather per-provider settings
     data.provider_settings = {};
     $('.provider-card').each(function() {
       const key = $(this).data('key');
@@ -78,12 +91,13 @@
     loader(true);
     post('smshub_save_settings', data, $btn).done(r => {
       loader(false);
-      alert_box($alert, r.success ? 'success' : 'error', r.success ? '✓ Settings saved.' : (r.data || 'Error'));
+      alert_box($alert, r.success ? 'success' : 'error', r.success ? 'Settings saved.' : (r.data || 'Error'));
     });
   });
 
   // ── Test provider ─────────────────────────────────────────────────────
-  $(document).on('click', '.smshub-btn-test', function() {
+  $(document).on('click', '.smshub-btn-test', function(e) {
+    e.stopPropagation();
     const $btn = $(this);
     const key  = $btn.data('provider');
     const to   = prompt('Enter test phone number (with country code):');
@@ -91,26 +105,30 @@
     loader(true);
     post('smshub_test_provider', { provider: key, test_number: to }, $btn).done(r => {
       loader(false);
-      alert(r.success ? '✓ Test SMS sent!' : ('✗ Failed: ' + (r.data || JSON.stringify(r))));
+      const $alert = $('#smshub-settings-alert');
+      if (r.success) alert_box($alert, 'success', 'Test SMS sent!');
+      else alert_box($alert, 'error', 'Failed: ' + (r.data || JSON.stringify(r)));
     });
   });
 
   // ── Check balance ─────────────────────────────────────────────────────
-  $(document).on('click', '.smshub-btn-balance', function() {
+  $(document).on('click', '.smshub-btn-balance', function(e) {
+    e.stopPropagation();
     const $btn = $(this);
     const key  = $btn.data('provider');
     loader(true);
     post('smshub_get_balance', { provider: key }, $btn).done(r => {
       loader(false);
+      const $alert = $('#smshub-settings-alert');
       if (r.success && r.data) {
         const b = r.data;
         const bal = (typeof b.balance === 'object' && b.balance !== null)
           ? (b.balance.amount ?? b.balance.value ?? JSON.stringify(b.balance))
           : (b.balance ?? 'N/A');
         const cur = b.currency ?? '';
-        alert('Balance: ' + bal + (cur ? ' ' + cur : ''));
+        alert_box($alert, 'info', 'Balance: ' + bal + (cur ? ' ' + cur : ''));
       } else {
-        alert('Balance check not supported or failed.');
+        alert_box($alert, 'error', 'Balance check not supported or failed.');
       }
     });
   });
@@ -143,10 +161,18 @@
     $modal.addClass('open');
   }
 
-  $(document).on('click', '.smshub-modal-close, .smshub-modal-overlay', function(e) {
-    if (e.target === this) $(this).closest('.smshub-modal-overlay').removeClass('open');
+  // ── Modal close ───────────────────────────────────────────────────────
+  $(document).on('click', '.smshub-modal-close', function() {
+    $(this).closest('.smshub-modal-overlay').removeClass('open');
+  });
+  $(document).on('click', '.smshub-modal-overlay', function(e) {
+    if (e.target === this) $(this).removeClass('open');
+  });
+  $(document).on('keydown', function(e) {
+    if (e.key === 'Escape') $('.smshub-modal-overlay.open').removeClass('open');
   });
 
+  // ── Save trigger ──────────────────────────────────────────────────────
   $(document).on('submit', '#smshub-trigger-form', function(e) {
     e.preventDefault();
     const $btn = $(this).find('.smshub-btn-primary');
@@ -163,7 +189,7 @@
     loader(true);
     post('smshub_save_trigger', data, $btn).done(r => {
       loader(false);
-      if (r.success) { location.reload(); }
+      if (r.success) location.reload();
       else alert('Error: ' + (r.data || 'Unknown'));
     });
   });
@@ -171,8 +197,8 @@
   // ── Delete trigger ────────────────────────────────────────────────────
   $(document).on('click', '.trigger-delete', function() {
     if (!confirm('Delete this trigger?')) return;
-    const id = $(this).data('id');
-    post('smshub_delete_trigger', { id }).done(r => { if (r.success) $(this).closest('tr').fadeOut(); });
+    const $el = $(this);
+    post('smshub_delete_trigger', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
   });
 
   // ── Toggle trigger active ─────────────────────────────────────────────
@@ -201,8 +227,8 @@
   // ── Delete contact ────────────────────────────────────────────────────
   $(document).on('click', '.contact-delete', function() {
     if (!confirm('Remove this contact?')) return;
-    const id = $(this).data('id');
-    post('smshub_delete_contact', { id }).done(r => { if (r.success) $(this).closest('tr').fadeOut(); });
+    const $el = $(this);
+    post('smshub_delete_contact', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
   });
 
   // ── CSV import ────────────────────────────────────────────────────────
@@ -215,8 +241,12 @@
     $.ajax({ url: ajax, type: 'POST', data: fd, processData: false, contentType: false })
       .done(r => {
         loader(false);
-        if (r.success) alert(`Imported ${r.data.imported} contacts. Errors: ${r.data.errors.length}`);
-        else alert('Import failed.');
+        if (r.success) {
+          alert(`Imported ${r.data.imported} contacts. Errors: ${r.data.errors.length}`);
+          if (r.data.imported > 0) location.reload();
+        } else {
+          alert('Import failed.');
+        }
       });
   });
 
@@ -227,8 +257,8 @@
   });
 
   $(document).on('click', '.log-delete', function() {
-    const id = $(this).data('id');
-    post('smshub_delete_log', { id }).done(r => { if (r.success) $(this).closest('tr').fadeOut(); });
+    const $el = $(this);
+    post('smshub_delete_log', { id: $el.data('id') }).done(r => { if (r.success) removeRow($el); });
   });
 
   // ── Tabs ──────────────────────────────────────────────────────────────
@@ -236,15 +266,24 @@
     const target = $(this).data('tab');
     $('.smshub-tab').removeClass('active');
     $(this).addClass('active');
-    $('.smshub-tab-panel').hide();
-    $('#tab-' + target).show();
+    $('.smshub-tab-panel').hide().filter('#tab-' + target).fadeIn(200);
   });
   $('.smshub-tab:first').trigger('click');
 
   // ── REST API key generate ─────────────────────────────────────────────
   $(document).on('click', '#smshub-gen-key', function() {
     const key = Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2,'0')).join('');
-    $('#smshub_rest_api_key').val(key);
+    $('#smshub_rest_api_key').val(key).css('opacity', '0').animate({ opacity: 1 }, 300);
+  });
+
+  // ── Entrance animations ───────────────────────────────────────────────
+  $(function() {
+    $('.smshub-card, .provider-card').each(function(i) {
+      $(this).css({ opacity: 0, transform: 'translateY(12px)' });
+      setTimeout(() => {
+        $(this).css({ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', opacity: 1, transform: 'translateY(0)' });
+      }, 60 * i);
+    });
   });
 
 })(jQuery);
