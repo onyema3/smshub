@@ -52,6 +52,10 @@ class REST_API {
             }
         }
 
+        // Apply IP whitelist filter
+        $allowed = apply_filters( 'wp_sms_hub_rest_auth', true, $request );
+        if ( ! $allowed ) return false;
+
         return current_user_can( 'manage_options' );
     }
 

@@ -32,6 +32,9 @@ class Plugin {
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-link-tracker.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-ai-messages.php';
         require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-workflows.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-audit.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-privacy.php';
+        require_once WPSMSHUB_PLUGIN_DIR . 'includes/class-security.php';
 
         // Load all providers
         foreach ( glob( WPSMSHUB_PLUGIN_DIR . 'providers/class-*.php' ) as $file ) {
@@ -54,6 +57,9 @@ class Plugin {
         new Campaigns();
         new Link_Tracker();
         new Workflows();
+        new Audit();
+        new Privacy();
+        new Security();
 
         do_action( 'wp_sms_hub_loaded' );
     }
