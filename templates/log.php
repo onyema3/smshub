@@ -1,17 +1,17 @@
 <?php defined('ABSPATH') || exit; ?>
 <div class="smshub-wrap">
-  <div class="flex-between" style="margin-bottom:20px;">
+  <div class="flex-between" style="margin-bottom:24px;">
     <h1 class="mb-0"><span class="dashicons dashicons-list-view"></span> SMS Log</h1>
-    <button id="smshub-clear-log" class="smshub-btn smshub-btn-danger smshub-btn-sm">🗑 Clear All</button>
+    <button id="smshub-clear-log" class="smshub-btn smshub-btn-danger smshub-btn-sm">Clear All</button>
   </div>
 
   <div class="smshub-loader"><div class="smshub-loader-bar"></div></div>
 
   <!-- Filters -->
-  <form method="get" class="flex" style="margin-bottom:16px;gap:10px;flex-wrap:wrap;">
+  <form method="get" class="flex" style="margin-bottom:18px;gap:10px;flex-wrap:wrap;">
     <input type="hidden" name="page" value="smshub-log">
     <input type="text" name="s" class="smshub-input" style="max-width:200px;"
-      placeholder="Search number/message…" value="<?= esc_attr($_GET['s'] ?? '') ?>">
+      placeholder="Search number/message..." value="<?= esc_attr($_GET['s'] ?? '') ?>">
     <select name="status" class="smshub-select" style="max-width:150px;">
       <option value="">All Statuses</option>
       <option value="sent"    <?= selected($_GET['status'] ?? '', 'sent',    false) ?>>Sent</option>
@@ -54,35 +54,35 @@
             <td class="smshub-mono" style="color:var(--hub-muted);">#<?= (int)$row['id'] ?></td>
             <td><span class="badge badge-active"><?= esc_html($row['provider']) ?></span></td>
             <td class="smshub-mono"><?= esc_html($row['recipient']) ?></td>
-            <td class="smshub-truncate" title="<?= esc_attr($row['message']) ?>" style="max-width:250px;"><?= esc_html($row['message']) ?></td>
+            <td class="smshub-truncate" title="<?= esc_attr($row['message']) ?>" style="max-width:220px;"><?= esc_html($row['message']) ?></td>
             <td style="font-size:11px;color:var(--hub-muted);"><?= esc_html($row['trigger_src'] ?: '—') ?></td>
             <td>
               <span class="badge badge-<?= esc_attr($row['status']) ?>"><?= esc_html($row['status']) ?></span>
               <?php if ($row['error_msg']): ?>
-                <span title="<?= esc_attr($row['error_msg']) ?>" style="cursor:help;color:var(--hub-danger);">⚠</span>
+                <span title="<?= esc_attr($row['error_msg']) ?>" style="cursor:help;color:var(--hub-danger);margin-left:4px;">!</span>
               <?php endif; ?>
             </td>
             <td style="font-size:12px;color:var(--hub-muted);white-space:nowrap;">
               <?= esc_html(date('d M y H:i', strtotime($row['created_at']))) ?>
             </td>
             <td>
-              <button class="smshub-btn smshub-btn-ghost smshub-btn-sm log-delete" data-id="<?= (int)$row['id'] ?>">✕</button>
+              <button class="smshub-btn smshub-btn-ghost smshub-btn-sm log-delete" data-id="<?= (int)$row['id'] ?>">x</button>
             </td>
           </tr>
           <?php endforeach; ?>
         </tbody>
       </table>
     </div>
-    <div style="padding:12px 0 0;font-size:12px;color:var(--hub-muted);">
-      Showing <?= count($data['items']) ?> of <?= number_format($data['total']) ?> entries
+    <div class="smshub-pagination">
+      <span>Showing <?= count($data['items']) ?> of <?= number_format($data['total']) ?> entries</span>
       <?php
         $offset = (int)($_GET['offset'] ?? 0);
         $per    = 50;
         $total  = $data['total'];
         if ($total > $per):
       ?>
-      — <a href="?page=smshub-log&offset=<?= max(0, $offset-$per) ?>" class="smshub-btn smshub-btn-ghost smshub-btn-sm" <?= $offset === 0 ? 'disabled' : '' ?>>← Prev</a>
-         <a href="?page=smshub-log&offset=<?= $offset+$per ?>" class="smshub-btn smshub-btn-ghost smshub-btn-sm" <?= ($offset+$per >= $total) ? 'disabled' : '' ?>>Next →</a>
+      <a href="?page=smshub-log&offset=<?= max(0, $offset-$per) ?>" class="smshub-btn smshub-btn-ghost smshub-btn-sm" <?= $offset === 0 ? 'disabled' : '' ?>>Prev</a>
+      <a href="?page=smshub-log&offset=<?= $offset+$per ?>" class="smshub-btn smshub-btn-ghost smshub-btn-sm" <?= ($offset+$per >= $total) ? 'disabled' : '' ?>>Next</a>
       <?php endif; ?>
     </div>
     <?php endif; ?>

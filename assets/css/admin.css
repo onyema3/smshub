@@ -1,179 +1,621 @@
-/* WP SMS Hub — Admin Styles */
+/* WP SMS Hub — Modern Admin Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :root {
-  --hub-bg: #0f1117;
-  --hub-surface: #1a1d27;
-  --hub-border: #2a2d3e;
-  --hub-accent: #6c63ff;
-  --hub-accent2: #00d4aa;
-  --hub-danger: #ff4d6d;
-  --hub-warn: #ffa630;
-  --hub-text: #e2e5f1;
-  --hub-muted: #6b7280;
-  --hub-radius: 10px;
-  --hub-font: 'Inter', -apple-system, sans-serif;
+  --hub-bg: #0a0c10;
+  --hub-surface: rgba(22, 27, 45, 0.8);
+  --hub-surface-solid: #161b2d;
+  --hub-surface-hover: rgba(30, 36, 58, 0.9);
+  --hub-border: rgba(255, 255, 255, 0.06);
+  --hub-border-hover: rgba(255, 255, 255, 0.12);
+  --hub-accent: #7c6aff;
+  --hub-accent-light: #9d8fff;
+  --hub-accent-glow: rgba(124, 106, 255, 0.25);
+  --hub-accent2: #00e4b8;
+  --hub-accent2-glow: rgba(0, 228, 184, 0.2);
+  --hub-danger: #ff5277;
+  --hub-danger-glow: rgba(255, 82, 119, 0.2);
+  --hub-warn: #ffb347;
+  --hub-warn-glow: rgba(255, 179, 71, 0.2);
+  --hub-text: #f0f2f8;
+  --hub-text-secondary: #a0a8c0;
+  --hub-muted: #5e6680;
+  --hub-radius: 16px;
+  --hub-radius-sm: 10px;
+  --hub-radius-xs: 6px;
+  --hub-font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --hub-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --hub-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --hub-gradient: linear-gradient(135deg, #7c6aff 0%, #00e4b8 100%);
+  --hub-gradient-warm: linear-gradient(135deg, #ff5277 0%, #ffb347 100%);
+  --hub-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Layout ──────────────────────────────────────────── */
-.smshub-wrap { font-family: var(--hub-font); color: var(--hub-text); max-width: 1280px; }
-.smshub-wrap h1 { color: var(--hub-text); font-size: 22px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-.smshub-wrap h1 .dashicons { color: var(--hub-accent); font-size: 28px; width: 28px; height: 28px; }
+/* ── Reset & Base ─────────────────────────────────────── */
+.smshub-wrap * { box-sizing: border-box; }
+.smshub-wrap {
+  font-family: var(--hub-font);
+  color: var(--hub-text);
+  max-width: 1360px;
+  padding: 0 8px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-.smshub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.smshub-wrap h1 {
+  color: var(--hub-text);
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: -0.02em;
+}
+.smshub-wrap h1 .dashicons {
+  background: var(--hub-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+}
 
+/* ── Grid Layouts ─────────────────────────────────────── */
+.smshub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+/* ── Cards ────────────────────────────────────────────── */
 .smshub-card {
   background: var(--hub-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--hub-border);
   border-radius: var(--hub-radius);
-  padding: 20px 24px;
+  padding: 24px 28px;
+  transition: var(--hub-transition);
+  position: relative;
+  overflow: hidden;
+}
+.smshub-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+.smshub-card:hover {
+  border-color: var(--hub-border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--hub-shadow);
 }
 
-.smshub-card h3 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--hub-muted); margin: 0 0 6px; }
-.smshub-card .stat { font-size: 34px; font-weight: 800; color: var(--hub-accent); line-height: 1; }
-.smshub-card .stat.green { color: var(--hub-accent2); }
-.smshub-card .stat.red   { color: var(--hub-danger); }
-.smshub-card .stat.orange { color: var(--hub-warn); }
+.smshub-card h3 {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hub-muted);
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.smshub-card .stat {
+  font-size: 38px;
+  font-weight: 800;
+  background: var(--hub-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.smshub-card .stat.green {
+  background: linear-gradient(135deg, #00e4b8, #00ff88);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.smshub-card .stat.red {
+  background: var(--hub-gradient-warm);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.smshub-card .stat.orange {
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 
 /* ── Two-column compose ──────────────────────────────── */
-.smshub-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.smshub-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 @media (max-width: 900px) { .smshub-cols { grid-template-columns: 1fr; } }
 
-/* ── Form ────────────────────────────────────────────── */
-.smshub-form-group { margin-bottom: 16px; }
-.smshub-form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--hub-text); }
+/* ── Form Elements ───────────────────────────────────── */
+.smshub-form-group { margin-bottom: 18px; }
+.smshub-form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--hub-text-secondary);
+  letter-spacing: 0.02em;
+}
 .smshub-form-group label span.req { color: var(--hub-danger); margin-left: 2px; }
 
 .smshub-input,
 .smshub-select,
 .smshub-textarea {
   width: 100%;
-  background: #12141e;
+  background: rgba(10, 12, 16, 0.6);
   border: 1px solid var(--hub-border);
-  border-radius: 7px;
+  border-radius: var(--hub-radius-sm);
   color: var(--hub-text);
-  padding: 9px 12px;
+  padding: 11px 14px;
   font-size: 14px;
   font-family: var(--hub-font);
   box-sizing: border-box;
-  transition: border-color .15s, box-shadow .15s;
+  transition: var(--hub-transition);
+  outline: none;
+}
+.smshub-input::placeholder,
+.smshub-textarea::placeholder {
+  color: var(--hub-muted);
+}
+.smshub-input:hover,
+.smshub-select:hover,
+.smshub-textarea:hover {
+  border-color: var(--hub-border-hover);
 }
 .smshub-input:focus,
 .smshub-select:focus,
-.smshub-textarea:focus { outline: none; border-color: var(--hub-accent); box-shadow: 0 0 0 3px rgba(108,99,255,.15); }
+.smshub-textarea:focus {
+  border-color: var(--hub-accent);
+  box-shadow: 0 0 0 3px var(--hub-accent-glow), inset 0 0 0 1px var(--hub-accent);
+}
 
-.smshub-textarea { min-height: 100px; resize: vertical; }
-.smshub-select option { background: #1a1d27; }
+.smshub-textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+.smshub-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235e6680'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.smshub-select option { background: var(--hub-surface-solid); color: var(--hub-text); }
 
 /* ── Buttons ─────────────────────────────────────────── */
 .smshub-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: 7px; font-size: 13px; font-weight: 600;
-  cursor: pointer; border: none; transition: opacity .15s, transform .1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--hub-radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--hub-font);
+  cursor: pointer;
+  border: none;
+  transition: var(--hub-transition);
   text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 }
-.smshub-btn:hover { opacity: .88; transform: translateY(-1px); }
+.smshub-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+.smshub-btn:hover { transform: translateY(-2px); box-shadow: var(--hub-shadow); }
 .smshub-btn:active { transform: translateY(0); }
-.smshub-btn-primary   { background: var(--hub-accent);  color: #fff; }
-.smshub-btn-success   { background: var(--hub-accent2); color: #0f1117; }
-.smshub-btn-danger    { background: var(--hub-danger);  color: #fff; }
-.smshub-btn-ghost     { background: transparent; border: 1px solid var(--hub-border); color: var(--hub-text); }
-.smshub-btn-sm        { padding: 5px 11px; font-size: 12px; }
-.smshub-btn[disabled] { opacity: .5; cursor: not-allowed; }
 
-/* ── Table ───────────────────────────────────────────── */
-.smshub-table-wrap { overflow-x: auto; }
+.smshub-btn-primary {
+  background: var(--hub-gradient);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--hub-accent-glow);
+}
+.smshub-btn-primary:hover { box-shadow: 0 6px 24px var(--hub-accent-glow); }
+
+.smshub-btn-success {
+  background: linear-gradient(135deg, #00e4b8, #00cc9f);
+  color: #0a0c10;
+  box-shadow: 0 4px 16px var(--hub-accent2-glow);
+}
+
+.smshub-btn-danger {
+  background: linear-gradient(135deg, #ff5277, #ff3355);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--hub-danger-glow);
+}
+
+.smshub-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--hub-border);
+  color: var(--hub-text-secondary);
+}
+.smshub-btn-ghost::after { display: none; }
+.smshub-btn-ghost:hover {
+  background: var(--hub-surface-hover);
+  border-color: var(--hub-border-hover);
+  color: var(--hub-text);
+}
+
+.smshub-btn-sm { padding: 6px 13px; font-size: 12px; border-radius: var(--hub-radius-xs); }
+.smshub-btn[disabled] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+/* ── Tables ──────────────────────────────────────────── */
+.smshub-table-wrap { overflow-x: auto; border-radius: var(--hub-radius-sm); }
 .smshub-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.smshub-table th { background: #12141e; color: var(--hub-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--hub-border); }
-.smshub-table td { padding: 10px 14px; border-bottom: 1px solid var(--hub-border); vertical-align: middle; }
+.smshub-table th {
+  background: rgba(10, 12, 16, 0.5);
+  color: var(--hub-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--hub-border);
+}
+.smshub-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--hub-border);
+  vertical-align: middle;
+  color: var(--hub-text-secondary);
+}
 .smshub-table tr:last-child td { border-bottom: none; }
-.smshub-table tr:hover td { background: rgba(255,255,255,.02); }
+.smshub-table tr { transition: var(--hub-transition); }
+.smshub-table tr:hover td { background: rgba(124, 106, 255, 0.03); color: var(--hub-text); }
 
 /* ── Badges ──────────────────────────────────────────── */
-.badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-.badge-sent    { background: rgba(0,212,170,.15); color: var(--hub-accent2); }
-.badge-failed  { background: rgba(255,77,109,.15); color: var(--hub-danger); }
-.badge-pending { background: rgba(255,166,48,.15); color: var(--hub-warn); }
-.badge-active  { background: rgba(108,99,255,.15); color: var(--hub-accent); }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge-sent    { background: var(--hub-accent2-glow); color: var(--hub-accent2); }
+.badge-failed  { background: var(--hub-danger-glow); color: var(--hub-danger); }
+.badge-pending { background: var(--hub-warn-glow); color: var(--hub-warn); }
+.badge-active  { background: var(--hub-accent-glow); color: var(--hub-accent-light); }
 
-/* ── Provider cards in settings ─────────────────────── */
-.provider-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 24px; }
+/* ── Provider Cards ─────────────────────────────────── */
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
 .provider-card {
-  background: #12141e;
-  border: 2px solid var(--hub-border);
-  border-radius: 10px;
-  padding: 16px 20px;
+  background: rgba(10, 12, 16, 0.5);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius);
+  padding: 20px 24px;
   cursor: pointer;
-  transition: border-color .15s, transform .1s;
+  transition: var(--hub-transition);
   position: relative;
 }
-.provider-card:hover { border-color: var(--hub-accent); transform: translateY(-2px); }
-.provider-card.active { border-color: var(--hub-accent2); }
-.provider-card .pname { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-.provider-card .active-dot {
-  position: absolute; top: 12px; right: 14px;
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--hub-accent2);
+.provider-card:hover {
+  border-color: var(--hub-accent);
+  background: rgba(124, 106, 255, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--hub-accent-glow);
 }
-.provider-fields { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--hub-border); display: none; }
+.provider-card.active {
+  border-color: var(--hub-accent2);
+  background: rgba(0, 228, 184, 0.04);
+  box-shadow: 0 4px 20px var(--hub-accent2-glow);
+}
+.provider-card .pname {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+  color: var(--hub-text);
+}
+.provider-card .active-dot {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--hub-accent2);
+  box-shadow: 0 0 8px var(--hub-accent2-glow);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 8px var(--hub-accent2-glow); }
+  50% { box-shadow: 0 0 16px var(--hub-accent2-glow), 0 0 24px var(--hub-accent2-glow); }
+}
+
+.provider-fields {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hub-border);
+  display: none;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .provider-card.active .provider-fields,
 .provider-fields.open { display: block; }
 
-/* ── Char counter ────────────────────────────────────── */
-.char-counter { font-size: 11px; color: var(--hub-muted); text-align: right; margin-top: 4px; }
-.char-counter.over { color: var(--hub-danger); }
-
-/* ── Toggle switch ───────────────────────────────────── */
-.smshub-toggle { position: relative; display: inline-block; width: 40px; height: 22px; }
+/* ── Toggle Switch ───────────────────────────────────── */
+.smshub-toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
 .smshub-toggle input { opacity: 0; width: 0; height: 0; }
 .smshub-toggle-slider {
-  position: absolute; inset: 0; background: var(--hub-border); border-radius: 22px;
-  cursor: pointer; transition: background .2s;
+  position: absolute;
+  inset: 0;
+  background: rgba(94, 102, 128, 0.3);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: var(--hub-transition);
 }
 .smshub-toggle-slider:before {
-  content: ''; position: absolute; width: 16px; height: 16px;
-  left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: transform .2s;
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: var(--hub-transition);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-.smshub-toggle input:checked + .smshub-toggle-slider { background: var(--hub-accent2); }
-.smshub-toggle input:checked + .smshub-toggle-slider:before { transform: translateX(18px); }
+.smshub-toggle input:checked + .smshub-toggle-slider {
+  background: linear-gradient(135deg, var(--hub-accent2), #00cc9f);
+  box-shadow: 0 0 12px var(--hub-accent2-glow);
+}
+.smshub-toggle input:checked + .smshub-toggle-slider:before { transform: translateX(20px); }
+
+/* ── Char counter ────────────────────────────────────── */
+.char-counter {
+  font-size: 11px;
+  color: var(--hub-muted);
+  text-align: right;
+  margin-top: 6px;
+  font-weight: 500;
+}
+.char-counter.over { color: var(--hub-danger); }
 
 /* ── Tabs ────────────────────────────────────────────── */
-.smshub-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--hub-border); margin-bottom: 20px; }
-.smshub-tab { padding: 9px 18px; border: none; background: none; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--hub-muted); border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
-.smshub-tab.active { color: var(--hub-accent); border-bottom-color: var(--hub-accent); }
+.smshub-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(10, 12, 16, 0.5);
+  border-radius: var(--hub-radius-sm);
+  margin-bottom: 24px;
+  width: fit-content;
+}
+.smshub-tab {
+  padding: 8px 18px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hub-muted);
+  border-radius: var(--hub-radius-xs);
+  transition: var(--hub-transition);
+}
+.smshub-tab:hover { color: var(--hub-text-secondary); }
+.smshub-tab.active {
+  color: var(--hub-text);
+  background: var(--hub-surface);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
 
 /* ── Alerts ──────────────────────────────────────────── */
-.smshub-alert { padding: 11px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
-.smshub-alert.success { background: rgba(0,212,170,.1); border: 1px solid rgba(0,212,170,.3); color: var(--hub-accent2); display: block; }
-.smshub-alert.error   { background: rgba(255,77,109,.1); border: 1px solid rgba(255,77,109,.3); color: var(--hub-danger);  display: block; }
-.smshub-alert.info    { background: rgba(108,99,255,.1); border: 1px solid rgba(108,99,255,.3); color: #a39fff; display: block; }
+.smshub-alert {
+  padding: 14px 18px;
+  border-radius: var(--hub-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 18px;
+  display: none;
+  backdrop-filter: blur(10px);
+  animation: alertSlide 0.3s ease;
+}
+@keyframes alertSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.smshub-alert.success {
+  background: var(--hub-accent2-glow);
+  border: 1px solid rgba(0, 228, 184, 0.3);
+  color: var(--hub-accent2);
+  display: block;
+}
+.smshub-alert.error {
+  background: var(--hub-danger-glow);
+  border: 1px solid rgba(255, 82, 119, 0.3);
+  color: var(--hub-danger);
+  display: block;
+}
+.smshub-alert.info {
+  background: var(--hub-accent-glow);
+  border: 1px solid rgba(124, 106, 255, 0.3);
+  color: var(--hub-accent-light);
+  display: block;
+}
 
 /* ── Modal ───────────────────────────────────────────── */
 .smshub-modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.7);
-  z-index: 99999; display: none; align-items: center; justify-content: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
 }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .smshub-modal-overlay.open { display: flex; }
+
 .smshub-modal {
-  background: var(--hub-surface); border: 1px solid var(--hub-border);
-  border-radius: 14px; width: 560px; max-width: 95vw; max-height: 90vh;
-  overflow-y: auto; padding: 28px;
+  background: var(--hub-surface-solid);
+  border: 1px solid var(--hub-border);
+  border-radius: 20px;
+  width: 580px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px;
+  box-shadow: var(--hub-shadow-lg);
+  animation: modalSlide 0.3s ease;
 }
-.smshub-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.smshub-modal-header h2 { font-size: 17px; font-weight: 700; margin: 0; }
-.smshub-modal-close { background: none; border: none; color: var(--hub-muted); cursor: pointer; font-size: 20px; line-height: 1; }
-.smshub-modal-close:hover { color: var(--hub-danger); }
+@keyframes modalSlide {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.smshub-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.smshub-modal-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.smshub-modal-close {
+  background: rgba(94, 102, 128, 0.2);
+  border: none;
+  color: var(--hub-muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--hub-transition);
+}
+.smshub-modal-close:hover { color: var(--hub-danger); background: var(--hub-danger-glow); }
 
 /* ── Progress bar ─────────────────────────────────────── */
-.smshub-loader { display: none; width: 100%; height: 3px; background: var(--hub-border); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.smshub-loader {
+  display: none;
+  width: 100%;
+  height: 3px;
+  background: rgba(94, 102, 128, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
 .smshub-loader.active { display: block; }
-.smshub-loader-bar { height: 100%; width: 40%; background: linear-gradient(90deg, var(--hub-accent), var(--hub-accent2)); animation: slideLoader 1.2s ease-in-out infinite; }
+.smshub-loader-bar {
+  height: 100%;
+  width: 40%;
+  background: var(--hub-gradient);
+  border-radius: 3px;
+  animation: slideLoader 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
 @keyframes slideLoader { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
 
+/* ── Empty States ────────────────────────────────────── */
+.smshub-empty {
+  text-align: center;
+  padding: 60px 40px;
+  color: var(--hub-muted);
+}
+.smshub-empty .dashicons {
+  font-size: 56px;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+.smshub-empty p { font-size: 14px; margin: 0; }
+
 /* ── Misc ────────────────────────────────────────────── */
-.smshub-empty { text-align: center; padding: 48px; color: var(--hub-muted); }
-.smshub-empty .dashicons { font-size: 48px; width: 48px; height: 48px; margin-bottom: 12px; }
-.smshub-mono { font-family: 'Courier New', monospace; font-size: 12px; }
+.smshub-mono { font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace; font-size: 12px; }
 .smshub-truncate { max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mt-0 { margin-top: 0; }
 .mb-0 { margin-bottom: 0; }
 .flex { display: flex; align-items: center; gap: 10px; }
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
+
+/* ── Scrollbar ───────────────────────────────────────── */
+.smshub-wrap ::-webkit-scrollbar { width: 6px; height: 6px; }
+.smshub-wrap ::-webkit-scrollbar-track { background: transparent; }
+.smshub-wrap ::-webkit-scrollbar-thumb { background: var(--hub-muted); border-radius: 3px; }
+.smshub-wrap ::-webkit-scrollbar-thumb:hover { background: var(--hub-text-secondary); }
+
+/* ── Quick Links ─────────────────────────────────────── */
+.smshub-quick-links { display: flex; flex-direction: column; gap: 10px; }
+.smshub-quick-links .smshub-btn {
+  justify-content: flex-start;
+  padding: 12px 16px;
+  border-radius: var(--hub-radius-sm);
+}
+.smshub-quick-links .smshub-btn:hover {
+  background: var(--hub-surface-hover);
+  border-color: var(--hub-accent);
+}
+
+/* ── API Box ─────────────────────────────────────────── */
+.smshub-api-box {
+  margin-top: 24px;
+  padding: 18px;
+  background: rgba(10, 12, 16, 0.6);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-sm);
+  font-size: 12px;
+  color: var(--hub-text-secondary);
+}
+.smshub-api-box strong { color: var(--hub-text); font-size: 13px; }
+.smshub-api-box code {
+  color: var(--hub-accent2);
+  background: rgba(0, 228, 184, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Template Variables Grid ─────────────────────────── */
+.smshub-var-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  font-size: 12px;
+}
+.smshub-var-grid code {
+  background: rgba(10, 12, 16, 0.6);
+  border: 1px solid var(--hub-border);
+  padding: 6px 10px;
+  border-radius: var(--hub-radius-xs);
+  color: var(--hub-accent-light);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  transition: var(--hub-transition);
+}
+.smshub-var-grid code:hover {
+  border-color: var(--hub-accent);
+  background: var(--hub-accent-glow);
+}
+
+/* ── Pagination ──────────────────────────────────────── */
+.smshub-pagination {
+  padding: 14px 0 0;
+  font-size: 12px;
+  color: var(--hub-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
