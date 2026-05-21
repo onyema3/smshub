@@ -63,13 +63,23 @@
   });
 
   // ── Settings: provider select ─────────────────────────────────────────
-  $(document).on('click', '.provider-card', function() {
-    const key = $(this).data('key');
-    $('.provider-card').removeClass('active').find('.active-dot').remove();
-    $('.provider-card').find('.provider-fields').slideUp(200);
-    $(this).addClass('active');
-    $(this).prepend('<div class="active-dot" title="Active"></div>');
-    $(this).find('.provider-fields').slideDown(250);
+  $(document).on('click', '.provider-card', function(e) {
+    // Don't trigger card selection when clicking buttons inside the card
+    if ($(e.target).closest('.smshub-btn').length) return;
+
+    const $card = $(this);
+    const key = $card.data('key');
+
+    // Deactivate all cards
+    $('.provider-card').not($card).removeClass('active').find('.active-dot').remove();
+    $('.provider-card').not($card).find('.provider-fields').removeClass('open').slideUp(200);
+
+    // Activate clicked card
+    $card.addClass('active');
+    if (!$card.find('.active-dot').length) {
+      $card.prepend('<div class="active-dot" title="Active"></div>');
+    }
+    $card.find('.provider-fields').addClass('open').slideDown(250);
     $('#smshub_active_provider').val(key);
   });
 
@@ -97,7 +107,7 @@
 
   // ── Test provider ─────────────────────────────────────────────────────
   $(document).on('click', '.smshub-btn-test', function(e) {
-    e.stopPropagation();
+    e.preventDefault();
     const $btn = $(this);
     const key  = $btn.data('provider');
     const to   = prompt('Enter test phone number (with country code):');
@@ -113,7 +123,7 @@
 
   // ── Check balance ─────────────────────────────────────────────────────
   $(document).on('click', '.smshub-btn-balance', function(e) {
-    e.stopPropagation();
+    e.preventDefault();
     const $btn = $(this);
     const key  = $btn.data('provider');
     loader(true);
@@ -278,7 +288,7 @@
 
   // ── Entrance animations ───────────────────────────────────────────────
   $(function() {
-    $('.smshub-card, .provider-card').each(function(i) {
+    $('.smshub-grid .smshub-card, .smshub-cols > .smshub-card').each(function(i) {
       $(this).css({ opacity: 0, transform: 'translateY(12px)' });
       setTimeout(() => {
         $(this).css({ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', opacity: 1, transform: 'translateY(0)' });
